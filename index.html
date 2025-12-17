@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ICS Chatbot Project</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f4f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .chat-container {
+            width: 400px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background-color: #6b4fbb;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .chat-box {
+            height: 400px;
+            padding: 15px;
+            overflow-y: auto;
+            border-bottom: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 10px;
+            border-radius: 10px;
+            line-height: 1.4;
+            font-size: 14px;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            align-self: flex-end;
+            border-bottom-right-radius: 0;
+        }
+
+        .bot-message {
+            background-color: #e9ecef;
+            color: black;
+            align-self: flex-start;
+            border-bottom-left-radius: 0;
+        }
+
+        .typing-indicator {
+            background-color: #e9ecef;
+            padding: 10px;
+            border-radius: 10px;
+            align-self: flex-start;
+            display: none;
+        }
+
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background-color: #999;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-indicator span:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-indicator span:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+
+            0%,
+            60%,
+            100% {
+                transform: translateY(0);
+            }
+
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .input-area {
+            display: flex;
+            padding: 10px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            outline: none;
+            font-size: 14px;
+
+        }
+
+        .chat-box::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .chat-box::-webkit-scrollbar-thumb {
+            background-color: rgba(0, 0, 0, 0.2);
+            border-radius: 3px;
+        }
+
+        /* Markdown Styles within Messages */
+        .message p {
+            margin: 0 0 8px 0;
+        }
+
+        .message p:last-child {
+            margin-bottom: 0;
+        }
+
+        .message ul,
+        .message ol {
+            margin: 0 0 8px 0;
+            padding-left: 20px;
+        }
+
+        .message li {
+            margin-bottom: 4px;
+        }
+
+        .message strong {
+            font-weight: 600;
+        }
+
+        .message code {
+            font-family: 'Consolas', 'Monaco', monospace;
+            background-color: rgba(0, 0, 0, 0.1);
+            padding: 2px 4px;
+            border-radius: 3px;
+            font-size: 0.9em;
+        }
+
+        .message pre {
+            background-color: rgba(0, 0, 0, 0.1);
+            padding: 8px;
+            border-radius: 5px;
+            overflow-x: auto;
+            margin: 8px 0;
+        }
+
+        .message pre code {
+            background-color: transparent;
+            padding: 0;
+        }
+
+
+        button {
+            margin-left: 10px;
+            padding: 10px 20px;
+            background-color: #6b4fbb;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #5a3ea3;
+        }
+
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+
+<body>
+
+    <div class="chat-container">
+        <div class="header">🤖 ICS Custom GPT</div>
+        <div class="header">🤖 Introduction to Computer Science</div>
+        <div class="chat-box" id="chatBox">
+            <div class="message bot-message">
+    <h3>Hello! I'm Perdeep Kumar's Custom GPT</h3>
+    <p>You can ask me about these ICS topics:</p>
+    
+    <ul class="topics-list">
+        <li>Greetings & Basics</li>
+        <li>Bot Identity & Features</li>
+        <li>Introduction to Computer Science</li>
+        <li>Number Systems (Binary/Decimal/Hex)</li>
+        <li>Computer Architecture & Hardware</li>
+        <li>Logic Gates & Boolean Algebra</li>
+        <li>LMC Programming</li>
+        <li>Programming Basics</li>
+        <li>Web & Internet Technologies</li>
+        <li>Study Help & Exam Preparation</li>
+    </ul>
+    
+    <p class="call-to-action">Just ask anything related to ICS or computer science!</p>
+</div>
+        </div>
+        <div class="typing-indicator" id="typingIndicator">
+            <span></span><span></span><span></span>
+        </div>
+        <div class="input-area">
+            <input type="text" id="userInput" placeholder="Type a message..." onkeypress="handleEnter(event)">
+            <button id="sendBtn" onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const responses = {
+            // ============================
+            // 👋 GREETINGS & BASICS
+            // ============================
+            "hello": [
+                "Hi there! I am your ICS AI Learning Assistant, designed specifically to help you master Introduction to Computer Science concepts. How can I help you learn today?",
+                "Hello! I'm here to guide you through computer science fundamentals. Ready to solve some CS problems or explore new concepts?",
+                "Hey there! Welcome to your personalized ICS tutor. What topic would you like to explore today? LMC architecture, Binary systems, Programming logic, or something else?"
+            ],
+            "hi": [
+                "Hi! I'm your ICS study companion. What concepts are you working on right now?",
+                "Hello! I detect you're studying ICS. Need help with theory, practical problems, or concept explanations?"
+            ],
+            "hey": ["Hey! What computer science concept can I clarify for you today?"],
+            "good morning": [
+                "Good morning! Perfect time for some computational thinking! What shall we learn today?",
+                "Morning! Ready to dive into computer architecture and programming concepts?"
+            ],
+            "good afternoon": ["Good afternoon! Time for some productive learning. What ICS topic shall we tackle?"],
+            "good evening": ["Good evening! Late night study session? Let's make it productive! What concept needs clarification?"],
+            "how are you": [
+                "I'm functioning at optimal capacity, ready to assist with all your ICS learning needs! How's your study session going?",
+                "I'm just code and algorithms, but I'm excited to help you learn! What's your current learning focus?"
+            ],
+
+            // ============================
+            // 🤖 BOT IDENTITY & CAPABILITIES
+            // ============================
+            "what is your name": [
+                "I am Perdeep Kumar, a specialized AI assistant created specifically for Introduction to Computer Science education. My purpose is to help you understand complex CS concepts through interactive explanations.",
+                "You can call me CS Mentor! I'm an AI designed specifically for ICS curriculum support and personalized learning assistance."
+            ],
+            "who created you": [
+                "I was developed by Perdeep Kumar, computer science educators and developers specifically for ICS/ICT curriculum support, incorporating pedagogical best practices for technical concept explanation.",
+                "I'm part of an educational technology initiative designed to make computer science fundamentals accessible and engaging for all learners."
+            ],
+            "what can you do": [
+                "I specialize in: \n1️⃣ **Concept Explanations** (LMC, Binary, Logic Gates, Architecture)\n2️⃣ **Problem Solving** (Number conversions, LMC programming)\n3️⃣ **Interactive Q&A** (Ask any ICS-related question)\n4️⃣ **Programming Basics** (Variables, loops, functions)\n5️⃣ **Exam Preparation** (Theory questions, practice problems)\n6️⃣ **Real-world Applications** (How concepts apply in industry)\n\nTry: 'Explain Von Neumann architecture' or 'Help me convert 45 to binary'",
+                "I'm your comprehensive ICS resource! I can:\n• Explain theoretical concepts in simple terms\n• Walk through LMC programming step-by-step\n• Help with binary/hexadecimal conversions\n• Define and explain technical terminology\n• Provide programming examples\n• Answer exam-style questions\n• Connect concepts to real-world computing"
+            ],
+            "are you real": [
+                "I'm as real as the algorithms running your favorite apps! While I don't have physical form, I'm a sophisticated software system designed specifically for computer science education.",
+                "I exist as code and data structures, but my knowledge of ICS concepts is very real! Think of me as an interactive textbook that understands and responds to your learning needs."
+            ],
+            "what are your features": [
+                "**Core Features:**\n✅ Adaptive Learning - I adjust explanations based on your understanding level\n✅ Step-by-Step Solutions - Detailed walkthroughs for problems\n✅ Multiple Explanation Formats - Visual, textual, and example-based\n✅ Progress Tracking - I remember what we've covered\n✅ Real-time Code Analysis - For LMC and basic programming\n✅ Exam Prep Mode - Focused question-answer sessions\n✅ Concept Linking - Show how different topics connect"
+            ],
+
+            // ============================
+            // 🖥️ INTRODUCTION TO COMPUTER SCIENCE
+            // ============================
+            "what is computer science": [
+                "**Computer Science** is the systematic study of algorithmic processes, computational machines, and computation itself. It encompasses:\n\n**Core Areas:**\n1. **Theory** - Algorithms, Data Structures, Computational Complexity\n2. **Systems** - Computer Architecture, Operating Systems, Networks\n3. **Applications** - AI, Databases, Graphics, Human-Computer Interaction\n4. **Software Engineering** - Design, Development, Testing, Maintenance\n\n**Key Idea:** It's not just about programming; it's about solving problems systematically using computational thinking."
+            ],
+            "what is ics": [
+                "**Introduction to Computer Science (ICS)** is the foundational course covering:\n\n**Curriculum Components:**\n📚 **Theory Fundamentals** - Binary systems, Boolean algebra, Computer architecture\n💻 **Programming Basics** - Algorithms, Flowcharts, Pseudocode, LMC\n🖥️ **Hardware Knowledge** - CPU, Memory, Storage, I/O devices\n🔢 **Number Systems** - Binary, Decimal, Hexadecimal conversions\n⚡ **Logic Design** - Logic gates, Truth tables, Simple circuits\n🌐 **Networking Basics** - Internet, Protocols, Web technologies\n\n**Learning Outcomes:** Understand how computers work at fundamental level and develop computational thinking skills."
+            ],
+            "what is computational thinking": [
+                "**Computational Thinking** is a problem-solving approach that involves:\n\n**Four Key Pillars:**\n1. **Decomposition** - Breaking complex problems into smaller parts\n2. **Pattern Recognition** - Identifying similarities and patterns\n3. **Abstraction** - Focusing on important details, ignoring irrelevant ones\n4. **Algorithm Design** - Creating step-by-step solutions\n\n**Example:** Making breakfast involves decomposition (toast, eggs, coffee), pattern recognition (same steps each day), abstraction (ignore brand of toaster), and algorithms (specific steps for each task)."
+            ],
+            "what is data": [
+                "**Data** refers to raw, unorganized facts and figures that need to be processed to become meaningful.\n\n**Characteristics:**\n• Raw and unprocessed\n• Can be quantitative or qualitative\n• Has no meaning without context\n• Examples: 25, 'Blue', 37.5, 'A'\n\n**Types of Data:**\n1. **Structured** - Organized in fixed format (databases)\n2. **Unstructured** - No predefined format (text, images)\n3. **Semi-structured** - Some organization (JSON, XML)\n\n**Computer Representation:** Everything becomes binary (0s and 1s) for processing."
+            ],
+            "what is information": [
+                "**Information** is processed, organized, and structured data that has context and meaning.\n\n**Key Differences from Data:**\n✅ **Contextual** - '37' vs '37°C body temperature'\n✅ **Meaningful** - Can be used for decision-making\n✅ **Processed** - Has been organized or analyzed\n✅ **Useful** - Serves a specific purpose\n\n**Example Transformation:**\nData: 25, 30, 22, 28\nInformation: 'Average temperature this week: 26.25°C'\nKnowledge: 'Temperatures are rising; summer is coming'\n\n**In Computing:** Information is what computers help us derive from raw data."
+            ],
+            "what is an algorithm": [
+                "**Algorithm:** A precise, unambiguous, finite sequence of steps to solve a specific problem.\n\n**Characteristics:**\n1. **Input** - Takes zero or more inputs\n2. **Output** - Produces at least one output\n3. **Definiteness** - Each step is precisely defined\n4. **Finiteness** - Terminates after finite steps\n5. **Effectiveness** - Each step is basic enough to be carried out\n\n**Real-world Examples:**\n• **Recipe** - Step-by-step cooking instructions\n• **GPS Route** - Turn-by-turn navigation\n• **Morning Routine** - Sequence of daily activities\n\n**Computer Examples:** Sorting numbers, Searching database, Calculating grades"
+            ],
+            "what is a flowchart": [
+                "**Flowchart:** A graphical representation of an algorithm using standardized symbols.\n\n**Common Symbols:**\n○ **Oval** - Start/End\n□ **Rectangle** - Process/Operation\n◇ **Diamond** - Decision (Yes/No)\n▱ **Parallelogram** - Input/Output\n→ **Arrow** - Flow direction\n\n**Benefits:**\n• Visual clarity of logic flow\n• Easy to understand complex processes\n• Helps identify logic errors early\n• Universal language for programmers\n\n**Example Flow:** Start → Input grades → Calculate average → Display result → End"
+            ],
+            "what is pseudocode": [
+                "**Pseudocode:** A simplified, human-readable representation of programming logic using a mix of natural language and programming constructs.\n\n**Purpose:**\n• Plan program logic before coding\n• Communicate algorithms clearly\n• Focus on logic, not syntax\n• Language-independent design\n\n**Structure Elements:**\n• Keywords: START, END, INPUT, OUTPUT, IF, ELSE, WHILE, FOR\n• Indentation for scope\n• Descriptive variable names\n• Mathematical operations\n\n**Example:**\n```\nSTART\n    INPUT studentGrades\n    total = 0\n    FOR each grade in studentGrades\n        total = total + grade\n    average = total / number of grades\n    OUTPUT average\nEND\n```"
+            ],
+
+            // ============================
+            // 🔢 NUMBER SYSTEMS & DATA REPRESENTATION
+            // ============================
+            "what is binary": [
+                "**Binary System** (Base-2): The fundamental language of computers using only 0 and 1.\n\n**Why Binary?**\n• Computers use electronic switches (transistors)\n• Two states: ON (1) and OFF (0)\n• Simple and reliable for hardware\n• Easy error detection/correction\n\n**Binary Digits:**\n• **Bit** - Single binary digit (0 or 1)\n• **Nibble** - 4 bits (e.g., 1101)\n• **Byte** - 8 bits (e.g., 10101010)\n• **Word** - Group of bytes (16, 32, or 64 bits)\n\n**Place Values:** Right to left: 2⁰, 2¹, 2², 2³...\nExample: 1011₂ = (1×8) + (0×4) + (1×2) + (1×1) = 11₁₀"
+            ],
+            "what is decimal": [
+                "**Decimal System** (Base-10): Our everyday number system using digits 0-9.\n\n**Characteristics:**\n• Most natural for humans (10 fingers)\n• Place values: ...1000, 100, 10, 1\n• Each position represents power of 10\n\n**Conversion to Binary:**\n1. Divide number by 2 repeatedly\n2. Record remainders (0 or 1)\n3. Read remainders backwards\n\n**Example: Convert 13 to binary:**\n13 ÷ 2 = 6 R1\n6 ÷ 2 = 3 R0\n3 ÷ 2 = 1 R1\n1 ÷ 2 = 0 R1\nResult: 1101₂"
+            ],
+            "what is hexadecimal": [
+                "**Hexadecimal** (Base-16): Compact representation of binary, using digits 0-9 and letters A-F.\n\n**Why Use Hex?**\n• Shorter than binary (1 hex digit = 4 bits)\n• Easy conversion to/from binary\n• Commonly used in memory addresses, color codes\n\n**Hex Digits:** 0,1,2,3,4,5,6,7,8,9,A,B,C,D,E,F\nWhere: A=10, B=11, C=12, D=13, E=14, F=15\n\n**Binary to Hex:** Group bits in 4s, convert each group\nExample: 1101 1010₂ = DA₁₆\n\n**Common Uses:**\n• Memory addresses: 0x7FFF\n• Color codes: #FF5733\n• Assembly language\n• Debugging tools"
+            ],
+            "what is ascii": [
+                "**ASCII** (American Standard Code for Information Interchange): 7-bit character encoding standard.\n\n**Key Features:**\n• Represents 128 characters (0-127)\n• Includes control codes + printable characters\n• English-centric (no accented characters)\n• Each character = 1 byte (7 bits + 1 parity)\n\n**Important Codes:**\n• 0-31: Control characters (NULL, TAB, ENTER)\n• 32: Space\n• 48-57: Digits 0-9\n• 65-90: Uppercase A-Z\n• 97-122: Lowercase a-z\n\n**Example:** 'A' = 65₁₀ = 01000001₂\n'H' = 72₁₀ = 01001000₂\n'Hello' = 72 101 108 108 111"
+            ],
+            "what is unicode": [
+                "**Unicode:** Comprehensive character encoding supporting all world's writing systems.\n\n**Advantages over ASCII:**\n• Supports 149,186+ characters\n• Multiple languages in one document\n• Emojis, symbols, special characters\n• UTF-8, UTF-16, UTF-32 encodings\n\n**UTF-8 (Most Common):**\n• Variable-length (1-4 bytes per character)\n• Backward compatible with ASCII\n• English: 1 byte, European: 2 bytes, Asian: 3-4 bytes\n\n**Example Encodings:**\n• 'A' (U+0041): 1 byte\n• 'ñ' (U+00F1): 2 bytes\n• '字' (U+5B57): 3 bytes\n• '😊' (U+1F60A): 4 bytes"
+            ],
+            "what is a bit": [
+                "**Bit** (Binary Digit): The smallest unit of data in computing.\n\n**Properties:**\n• Can be 0 or 1\n• Represents two states: true/false, yes/no, on/off\n• Foundation of all digital data\n\n**Physical Representation:**\n• Voltage levels: High (1) vs Low (0)\n• Magnetic polarity: North (1) vs South (0)\n• Light: On (1) vs Off (0)\n• Transistor state: Conducting (1) vs Not (0)\n\n**Importance:** Every piece of digital information—text, images, video, programs—is ultimately stored and processed as bits."
+            ],
+            "what is a byte": [
+                "**Byte:** Group of 8 bits, the standard unit for data measurement.\n\n**Why 8 bits?** Historical convention providing 256 combinations (2⁸), enough for:\n• All ASCII characters\n• Basic numeric range (0-255)\n• Efficient hardware implementation\n\n**Common Multiples:**\n• **Kilobyte (KB)** = 1024 bytes\n• **Megabyte (MB)** = 1024 KB\n• **Gigabyte (GB)** = 1024 MB\n• **Terabyte (TB)** = 1024 GB\n\n**What fits in a byte?**\n• One ASCII character\n• Small integer (0-255)\n• Color component in RGB\n• Opcode in machine language"
+            ],
+            "how to convert binary to decimal": [
+                "**Binary → Decimal Conversion Method:**\n\n**Step-by-Step:**\n1. Write binary number\n2. Label positions from right (starting at 0)\n3. Multiply each digit by 2^position\n4. Sum all results\n\n**Example: Convert 1101₂ to decimal:**\nPositions: 3 2 1 0\nBinary:   1 1 0 1\nCalculation:\n1×2³ = 1×8 = 8\n1×2² = 1×4 = 4\n0×2¹ = 0×2 = 0\n1×2⁰ = 1×1 = 1\nSum: 8 + 4 + 0 + 1 = 13₁₀\n\n**Quick Method:** Double and add from left:\nStart: 0\n0×2 + 1 = 1\n1×2 + 1 = 3\n3×2 + 0 = 6\n6×2 + 1 = 13"
+            ],
+            "how to convert decimal to binary": [
+                "**Decimal → Binary Conversion Methods:**\n\n**Method 1: Division by 2**\n1. Divide number by 2\n2. Record remainder (0 or 1)\n3. Use quotient for next division\n4. Repeat until quotient = 0\n5. Read remainders backwards\n\n**Example: Convert 29 to binary:**\n29 ÷ 2 = 14 R1\n14 ÷ 2 = 7  R0\n7  ÷ 2 = 3  R1\n3  ÷ 2 = 1  R1\n1  ÷ 2 = 0  R1\nResult: 11101₂\n\n**Method 2: Powers of 2**\nFind largest power of 2 ≤ number\nSubtract, repeat with remainder\n29 = 16 (2⁴) + 8 (2³) + 4 (2²) + 1 (2⁰)\n      = 1    1    1    0    1\nResult: 11101₂"
+            ],
+            "how to convert hexadecimal to binary": [
+                "**Hexadecimal → Binary Conversion:**\n\n**Simple Method:** Convert each hex digit to 4 binary bits\n\n**Hex-Binary Table:**\n0 = 0000     8 = 1000\n1 = 0001     9 = 1001\n2 = 0010     A = 1010\n3 = 0011     B = 1011\n4 = 0100     C = 1100\n5 = 0101     D = 1101\n6 = 0110     E = 1110\n7 = 0111     F = 1111\n\n**Example: Convert 2A7F₁₆ to binary:**\n2 = 0010\nA = 1010\n7 = 0111\nF = 1111\nResult: 0010 1010 0111 1111₂ = 0010101001111111₂\n\n**Memory Trick:** Each hex digit = exactly 4 bits\nGroups of 4 bits = 1 hex digit"
+            ],
+
+            // ============================
+            // ⚙️ COMPUTER ARCHITECTURE & HARDWARE
+            // ============================
+            "what is hardware": [
+                "**Hardware:** Physical components of a computer system that you can touch and see.\n\n**Categories:**\n\n**1. Processing Devices**\n• CPU - Central Processing Unit\n• GPU - Graphics Processing Unit\n\n**2. Memory Devices**\n• RAM - Temporary working memory\n• ROM - Permanent firmware storage\n• Cache - Ultra-fast CPU memory\n\n**3. Storage Devices**\n• HDD - Magnetic disk storage\n• SSD - Flash-based storage\n• Optical Drives - CDs, DVDs\n\n**4. Input Devices**\n• Keyboard, Mouse, Scanner\n• Microphone, Webcam\n\n**5. Output Devices**\n• Monitor, Printer, Speakers\n• Projector\n\n**6. Communication Devices**\n• Network Card, Modem, Router\n• Bluetooth/Wi-Fi adapters"
+            ],
+            "what is software": [
+                "**Software:** Collection of instructions and data that tell hardware what to do.\n\n**Categories:**\n\n**1. System Software**\n• **Operating Systems** (Windows, macOS, Linux) - Manages hardware\n• **Device Drivers** - Hardware-specific controllers\n• **Utilities** - Maintenance tools\n• **Firmware** - Low-level device software\n\n**2. Application Software**\n• **Productivity** - Office suites, email\n• **Creative** - Photo/video editing\n• **Educational** - Learning programs\n• **Entertainment** - Games, media players\n\n**3. Development Software**\n• **Compilers/Interpreters** - Translate code\n• **IDEs** - Integrated development environments\n• **Debuggers** - Find and fix errors\n\n**Key Concept:** Hardware without software is useless; software without hardware has nowhere to run."
+            ],
+            "what is cpu": [
+                "**CPU (Central Processing Unit):** The 'brain' of the computer.\n\n**Components:**\n1. **ALU** (Arithmetic Logic Unit) - Performs calculations\n2. **CU** (Control Unit) - Manages instruction execution\n3. **Registers** - Small, fast storage locations\n4. **Cache** - High-speed memory near CPU\n\n**CPU Performance Factors:**\n• **Clock Speed** - Cycles per second (GHz)\n• **Cores** - Multiple processing units\n• **Cache Size** - On-chip memory amount\n• **Architecture** - Design efficiency\n\n**The Fetch-Decode-Execute Cycle:**\n1. **Fetch** - Get instruction from memory\n2. **Decode** - Determine what to do\n3. **Execute** - Perform the operation\n4. **Store** - Save results if needed\n\n**Real-world Analogy:**\nCPU = Brain\nRAM = Short-term memory\nStorage = Long-term memory"
+            ],
+            "what is ram": [
+                "**RAM (Random Access Memory):** Volatile main memory for running programs.\n\n**Characteristics:**\n⚡ **Volatile** - Loses data when power off\n🚀 **Fast** - Much faster than storage\n📊 **Temporary** - Holds current working data\n🔢 **Addressable** - Each byte has unique address\n\n**Types of RAM:**\n1. **DRAM** (Dynamic RAM) - Needs refresh, cheaper\n2. **SRAM** (Static RAM) - Faster, more expensive\n3. **DDR SDRAM** - Common in modern computers\n\n**What's Stored in RAM?**\n• Currently running programs\n• Open documents\n• Operating system components\n• Temporary calculations\n\n**Analogy:** RAM = Office Desk\n• Limited space\n• Easy to access\n• Cleared at end of day"
+            ],
+            "what is rom": [
+                "**ROM (Read-Only Memory):** Non-volatile memory storing permanent instructions.\n\n**Characteristics:**\n🔒 **Non-volatile** - Retains data without power\n📜 **Permanent** - Data written during manufacturing\n⚙️ **Firmware** - Low-level system software\n🚫 **Read-only** - Usually cannot be modified\n\n**Types of ROM:**\n1. **Mask ROM** - Programmed during chip creation\n2. **PROM** - Programmable once\n3. **EPROM** - Erasable with UV light\n4. **EEPROM** - Electrically erasable\n5. **Flash Memory** - Modern type (USB, SSDs)\n\n**Common Uses:**\n• BIOS/UEFI firmware\n• Device firmware (printers, routers)\n• Bootstrap loaders\n• Game cartridges\n\n**Analogy:** ROM = Reference Manual on Desk\n• Always available\n• Doesn't change often\n• Essential for startup"
+            ],
+            "what is motherboard": [
+                "**Motherboard:** Main circuit board connecting all computer components.\n\n**Key Components:**\n1. **CPU Socket** - Holds processor\n2. **RAM Slots** - Memory module connectors\n3. **Chipset** - Manages data flow\n4. **Expansion Slots** (PCIe) - For graphics cards, etc.\n5. **Storage Connectors** (SATA, M.2)\n6. **Power Connectors**\n7. **I/O Ports** - USB, Ethernet, Audio\n8. **BIOS/UEFI Chip** - Startup firmware\n\n**Functions:**\n• Provides electrical connections\n• Hosts crucial components\n• Enables communication between parts\n• Distributes power\n• Provides expansion capability\n\n**Analogy:** Motherboard = City's Road System\n• Connects all districts (components)\n• Allows transportation (data transfer)\n• Has main highways (buses)"
+            ],
+            "what is hdd": [
+                "**HDD (Hard Disk Drive):** Magnetic storage device using spinning platters.\n\n**How it Works:**\n• **Platters** - Multiple spinning disks\n• **Read/Write Heads** - Magnetic sensors on arms\n• **Actuator Arm** - Moves heads to correct track\n• **Spindle** - Rotates platters (5400-7200 RPM)\n\n**Advantages:**\n💰 **Cost-effective** - Cheap per GB\n💾 **High Capacity** - Up to 20TB+\n📁 **Proven Technology** - Decades of development\n\n**Disadvantages:**\n🐢 **Slower** - Mechanical parts limit speed\n🔊 **Noisy** - Moving parts create sound\n🔋 **Power Hungry** - Needs more electricity\n💥 **Fragile** - Sensitive to physical shock\n\n**Typical Uses:**\n• Bulk storage\n• Media libraries\n• Backup systems\n• Archival storage"
+            ],
+            "what is ssd": [
+                "**SSD (Solid State Drive):** Flash-based storage with no moving parts.\n\n**How it Works:**\n• **NAND Flash Memory** - Stores data in cells\n• **Controller** - Manages data storage/retrieval\n• **DRAM Cache** - Speeds up operations (some models)\n\n**Advantages:**\n⚡ **Very Fast** - 5-100x faster than HDD\n🔇 **Silent** - No moving parts\n💪 **Durable** - Resists physical shock\n🔋 **Energy Efficient** - Less power needed\n🌡️ **Cooler** - Less heat generation\n\n**Disadvantages:**\n💸 **More Expensive** per GB\n📉 **Limited Writes** - Cells wear out over time\n🗑️ **Complex Recovery** - Harder data recovery\n\n**Typical Uses:**\n• Operating System drive\n• Frequently used programs\n• Gaming storage\n• High-performance applications"
+            ],
+            "what is von neumann architecture": [
+                "**Von Neumann Architecture:** Stored-program computer design (1945).\n\n**Key Principles:**\n1. **Single Memory** - Both data AND instructions stored together\n2. **Sequential Processing** - One instruction at a time\n3. **Four Main Components:**\n   • **Memory Unit** - Stores data/instructions\n   • **ALU** - Performs calculations\n   • **Control Unit** - Manages operations\n   • **I/O Devices** - Communication with outside\n\n**The Bottleneck:**\n**Von Neumann Bottleneck** - Limited by memory bandwidth\n• CPU much faster than memory access\n• Single bus for data/instructions\n• Sequential instruction fetching\n\n**Modern Adaptations:**\n• Multiple cores\n• Cache memory hierarchy\n• Parallel processing\n• GPU computing\n\n**Historical Significance:**\nFoundation for virtually all modern computers"
+            ],
+            "what is harvard architecture": [
+                "**Harvard Architecture:** Separate memory for instructions and data.\n\n**Key Features:**\n• **Separate Buses** - Instruction bus + Data bus\n• **Parallel Access** - Can fetch instruction and data simultaneously\n• **No Von Neumann Bottleneck**\n• **Higher Performance** for certain tasks\n\n**Common Uses:**\n• Digital Signal Processors (DSP)\n• Microcontrollers\n• Embedded systems\n• Some supercomputers\n\n**Comparison with Von Neumann:**\nHarvard: Faster, more complex, less flexible\nVon Neumann: Simpler, more flexible, bottleneck issues\n\n**Modern Hybrid Approaches:**\nMost modern CPUs use modified Harvard architecture\n• Separate L1 caches (instruction/data)\n• Unified main memory\n• Best of both worlds"
+            ],
+
+            // ============================
+            // 🧠 LOGIC GATES & BOOLEAN ALGEBRA
+            // ============================
+            "what is a logic gate": [
+                "**Logic Gate:** Electronic circuit implementing Boolean function.\n\n**Basic Properties:**\n• **Inputs:** One or more binary values (0/1)\n• **Output:** Single binary value (0/1)\n• **Function:** Specific Boolean operation\n• **Implementation:** Transistors, diodes, relays\n\n**Importance:**\n• Building blocks of digital circuits\n• Create complex functions from simple ones\n• Fundamental to CPU design\n• Used in all digital electronics\n\n**Common Gate Types:**\n1. **Basic:** AND, OR, NOT\n2. **Derived:** NAND, NOR, XOR, XNOR\n3. **Universal:** NAND, NOR (can create any gate)\n\n**Symbol Standards:**\n• **ANSI/IEEE** - Rectangular symbols\n• **IEC** - International standard\n• **Traditional** - Distinctive shapes"
+            ],
+            "what is and gate": [
+                "**AND Gate:** Outputs 1 only if ALL inputs are 1.\n\n**Boolean Expression:** A · B or AB\n**Truth Table:**\nA | B | Output\n0 | 0 | 0\n0 | 1 | 0\n1 | 0 | 0\n1 | 1 | 1\n\n**Symbol:** D-shaped with curved input side\n\n**Real-world Analogy:**\n• **Security System** - Both password AND fingerprint required\n• **Car Starting** - Key turned AND brake pressed\n• **Microwave** - Door closed AND time set\n\n**Electrical Implementation:**\n• Series switches - All must be closed\n• Transistors in series\n\n**Applications:**\n• Enable/control circuits\n• Data validation\n• Address decoding"
+            ],
+            "what is or gate": [
+                "**OR Gate:** Outputs 1 if ANY input is 1.\n\n**Boolean Expression:** A + B\n**Truth Table:**\nA | B | Output\n0 | 0 | 0\n0 | 1 | 1\n1 | 0 | 1\n1 | 1 | 1\n\n**Symbol:** Curved back with pointed front\n\n**Real-world Analogy:**\n• **Alarm System** - Any sensor triggers alarm\n• **Online Purchase** - Credit card OR PayPal accepted\n• **Light Switch** - Any switch turns on light\n\n**Electrical Implementation:**\n• Parallel switches - Any can close circuit\n• Transistors in parallel\n\n**Applications:**\n• Multiple condition checking\n• Error detection\n• Control logic"
+            ],
+            "what is not gate": [
+                "**NOT Gate (Inverter):** Outputs opposite of input.\n\n**Boolean Expression:** A' or Ā\n**Truth Table:**\nA | Output\n0 | 1\n1 | 0\n\n**Symbol:** Triangle with small circle on output\n\n**Real-world Analogy:**\n• **Night Light** - On when dark, off when light\n• **Reverse Gear** - Car moves backward when forward expected\n• **Opposite Day** - Everything means its opposite\n\n**Electrical Implementation:**\n• Transistor inverter circuit\n• Relay with normally closed contact\n\n**Applications:**\n• Signal inversion\n• Complement generation\n• Memory cells\n• Clock signal generation"
+            ],
+            "what is nand gate": [
+                "**NAND Gate:** AND followed by NOT.\n\n**Boolean Expression:** (A·B)'\n**Truth Table:**\nA | B | Output\n0 | 0 | 1\n0 | 1 | 1\n1 | 0 | 1\n1 | 1 | 0\n\n**Importance:**\n🔑 **Universal Gate** - Can create any other gate\n🏭 **Common in Manufacturing** - Cheaper to produce\n⚡ **Faster** - Often faster than AND+NOT separately\n\n**Creating Other Gates from NAND:**\n• **NOT:** Both inputs connected together\n• **AND:** NAND + NOT (using another NAND)\n• **OR:** Three NAND gates\n• **NOR:** Four NAND gates\n\n**Applications:**\n• Memory cells (SRAM)\n• Microprocessor circuits\n• Digital logic design"
+            ],
+            "what is nor gate": [
+                "**NOR Gate:** OR followed by NOT.\n\n**Boolean Expression:** (A+B)'\n**Truth Table:**\nA | B | Output\n0 | 0 | 1\n0 | 1 | 0\n1 | 0 | 0\n1 | 1 | 0\n\n**Another Universal Gate:**\nCan create any logic function using only NOR gates\n\n**Creating Other Gates from NOR:**\n• **NOT:** Both inputs connected together\n• **OR:** NOR + NOT (using another NOR)\n• **AND:** Three NOR gates\n• **NAND:** Four NOR gates\n\n**Applications:**\n• SR latches\n• Address decoders\n• Control logic circuits\n\n**Special Property:**\nNOR gate = OR gate with inverted output"
+            ],
+            "what is xor gate": [
+                "**XOR Gate (Exclusive OR):** Outputs 1 if inputs are DIFFERENT.\n\n**Boolean Expression:** A ⊕ B = A'B + AB'\n**Truth Table:**\nA | B | Output\n0 | 0 | 0\n0 | 1 | 1\n1 | 0 | 1\n1 | 1 | 0\n\n**Key Properties:**\n• **Addition modulo 2** - Binary addition without carry\n• **Anti-coincidence** - Detects differences\n• **Commutative** - Order doesn't matter\n\n**Applications:**\n1. **Binary Addition** - Half adder, full adder\n2. **Parity Generation** - Error detection\n3. **Comparator** - Check if bits are different\n4. **Cryptography** - Simple encryption\n5. **Toggle Circuits** - Change state\n\n**Real-world Example:**\n• **Light Switch** - Two switches controlling one light\n• **Game Show** - Different answers = points\n• **Security** - Different codes = alarm"
+            ],
+            "what is xnor gate": [
+                "**XNOR Gate (Exclusive NOR):** Outputs 1 if inputs are SAME.\n\n**Boolean Expression:** (A ⊕ B)' = A'B' + AB\n**Truth Table:**\nA | B | Output\n0 | 0 | 1\n0 | 1 | 0\n1 | 0 | 0\n1 | 1 | 1\n\n**Also Called:**\n• Equivalence gate\n• Coincidence gate\n• NOT XOR\n\n**Applications:**\n1. **Comparators** - Check if values are equal\n2. **Parity Checkers** - Even parity detection\n3. **Digital Logic** - Equality testing\n4. **Arithmetic Circuits** - Certain operations\n\n**Real-world Analogy:**\n• **Security Check** - Both fingerprints match = access\n• **Password Verification** - Input matches stored = success\n• **Lock System** - Correct combination = opens"
+            ],
+            "what is truth table": [
+                "**Truth Table:** Systematic listing of all possible input combinations and corresponding outputs.\n\n**Purpose:**\n• Define logic gate/function behavior\n• Analyze circuit functionality\n• Verify Boolean expressions\n• Design digital circuits\n\n**Construction Steps:**\n1. List all inputs (n inputs = 2ⁿ rows)\n2. Create all binary combinations\n3. Calculate output for each combination\n4. Verify against requirements\n\n**Example for 2-input AND:**\nA | B | A AND B\n0 | 0 | 0\n0 | 1 | 0\n1 | 0 | 0\n1 | 1 | 1\n\n**For 3-input OR:**\nA | B | C | A OR B OR C\n0 | 0 | 0 | 0\n0 | 0 | 1 | 1\n0 | 1 | 0 | 1\n0 | 1 | 1 | 1\n1 | 0 | 0 | 1\n1 | 0 | 1 | 1\n1 | 1 | 0 | 1\n1 | 1 | 1 | 1"
+            ],
+            "what is boolean algebra": [
+                "**Boolean Algebra:** Mathematical system for binary variables and logic operations.\n\n**Basic Operations:**\n1. **AND (·)** - Conjunction\n2. **OR (+)** - Disjunction\n3. **NOT (')** - Negation\n\n**Fundamental Laws:**\n\n**Identity Laws:**\nA + 0 = A\nA · 1 = A\n\n**Null Laws:**\nA + 1 = 1\nA · 0 = 0\n\n**Idempotent Laws:**\nA + A = A\nA · A = A\n\n**Inverse Laws:**\nA + A' = 1\nA · A' = 0\n\n**Commutative Laws:**\nA + B = B + A\nA · B = B · A\n\n**Associative Laws:**\n(A + B) + C = A + (B + C)\n(A · B) · C = A · (B · C)\n\n**Distributive Laws:**\nA · (B + C) = (A · B) + (A · C)\nA + (B · C) = (A + B) · (A + C)\n\n**De Morgan's Laws:**\n(A + B)' = A' · B'\n(A · B)' = A' + B'\n\n**Applications:** Circuit design, database queries, search algorithms"
+            ],
+
+            // ============================
+            // 📠 LITTLE MAN COMPUTER (LMC) - EXPANDED
+            // ============================
+            "what is lmc": [
+                "**LMC (Little Man Computer):** Educational model of von Neumann architecture.\n\n**The Metaphor:**\nImagine a 'Little Man' in a room with:\n• **Mailboxes** (memory addresses 00-99)\n• **Calculator** (accumulator)\n• **Instruction Book** (program)\n• **In/Out Trays** (I/O)\n\n**Key Components:**\n1. **Memory** - 100 mailboxes (3-digit values)\n2. **Accumulator** - Working register\n3. **Program Counter** - Current instruction address\n4. **Instruction Register** - Current instruction\n5. **ALU** - Arithmetic unit\n6. **I/O Unit** - Input/Output handling\n\n**Educational Value:**\n• Teaches fetch-decode-execute cycle\n• Introduces machine language concepts\n• Demonstrates memory addressing\n• Shows how programs execute\n\n**Limitations:**\n• Simplified instruction set\n• Limited memory\n• No interrupts\n• Simplified I/O"
+            ],
+            "lmc instructions": [
+                "**Complete LMC Instruction Set:**\n\n**Memory Reference Instructions:**\n• **LDA** (5xx) - Load from memory to accumulator\n• **STA** (3xx) - Store accumulator to memory\n• **ADD** (1xx) - Add memory value to accumulator\n• **SUB** (2xx) - Subtract memory value from accumulator\n\n**Branch Instructions:**\n• **BRA** (6xx) - Branch always (unconditional jump)\n• **BRZ** (7xx) - Branch if accumulator = 0\n• **BRP** (8xx) - Branch if accumulator ≥ 0\n\n**I/O Instructions:**\n• **INP** (901) - Input to accumulator\n• **OUT** (902) - Output accumulator value\n\n**Control Instructions:**\n• **HLT** (000) - Halt execution\n• **DAT** - Data declaration (not an instruction)\n\n**Instruction Format:**\nOpcode (1 digit) + Address (2 digits)\nExample: 523 = LDA memory location 23"
+            ],
+            "what is mailbox": [
+                "**Mailbox (Memory Location):** Individual storage cell in LMC memory.\n\n**Properties:**\n• **Addresses:** 00 to 99 (100 locations)\n• **Capacity:** 3 decimal digits (-999 to +999)\n• **Contents:** Data OR instruction\n• **Types:**\n  - **Instruction Mailbox** - Contains opcode+address\n  - **Data Mailbox** - Contains numeric value\n\n**Memory Map Example:**\n00-09: Program code\n10-19: Variables/data\n90-99: Reserved/Special addresses\n\n**Important Addresses:**\n• **00** - Usually program start\n• **99** - Often used for I/O simulation\n\n**Access Mechanism:**\n1. Little Man reads address from Program Counter\n2. Goes to that mailbox\n3. Reads 3-digit value\n4. Returns to processing area"
+            ],
+            "what is accumulator": [
+                "**Accumulator:** Central working register in LMC/CPU.\n\n**Function:**\n• **Temporary Storage** - Holds current working value\n• **Arithmetic Operations** - All calculations happen here\n• **Decision Making** - BRZ/BRP check accumulator value\n• **I/O Buffer** - Input goes here, output comes from here\n\n**Characteristics:**\n• **Single Register** - Only one accumulator in basic LMC\n• **Limited Range** - Typically -999 to +999\n• **Volatile** - Changes with each operation\n• **Central Role** - Most instructions involve accumulator\n\n**Analogy:**\nAccumulator = Worker's Hands\n• Holds current item being worked on\n• All operations involve hands\n• Can only hold one thing at a time\n• Results placed back in hands\n\n**Example Operations:**\nINP → Acc gets input\nADD 50 → Acc = Acc + mailbox50\nSTA 60 → mailbox60 = Acc\nOUT → Display Acc value"
+            ],
+            "what is program counter": [
+                "**Program Counter (PC):** Special register holding address of next instruction.\n\n**Function:**\n• **Sequence Control** - Determines execution order\n• **Instruction Pointer** - Points to next instruction\n• **Automatic Increment** - Normally PC = PC + 1\n• **Branch Modification** - Changed by BRA/BRZ/BRP\n\n**Operation Cycle:**\n1. PC holds address N\n2. Fetch instruction from mailbox N\n3. PC increments to N+1 (unless branch)\n4. Execute instruction\n5. Repeat\n\n**Branch Behavior:**\n• **BRA XX** → PC = XX\n• **BRZ XX** → If Acc=0, PC=XX else PC=PC+1\n• **BRP XX** → If Acc≥0, PC=XX else PC=PC+1\n\n**Analogy:**\nPC = Bookmark in Recipe Book\n• Points to current step\n• Moves forward automatically\n• Can jump to different page (branch)\n• Essential for correct sequence"
+            ],
+            "what is instruction register": [
+                "**Instruction Register (IR):** Holds current instruction being executed.\n\n**Purpose:**\n• **Temporary Storage** - Holds instruction during execution\n• **Decoding** - Control unit analyzes IR contents\n• **Address Extraction** - Get memory address from instruction\n• **Opcode Separation** - Split instruction into parts\n\n**Typical Contents:**\n• **Opcode** - First digit (what to do)\n• **Operand** - Last two digits (where to do it)\n\n**Example:**\nIR contains: 523\n• Opcode = 5 (LDA)\n• Operand = 23 (address)\n\n**Processing Steps:**\n1. Instruction fetched to IR\n2. Control unit decodes opcode\n3. Extract address from operand\n4. Execute appropriate operation\n5. Clear IR for next instruction\n\n**Analogy:**\nIR = Worker's Current Task Card\n• Holds details of current task\n• Referred to while working\n• Discarded when task complete\n• Replaced with next task"
+            ],
+            "what is fetch decode execute": [
+                "**Fetch-Decode-Execute Cycle:** Fundamental CPU operation sequence.\n\n**Detailed Steps:**\n\n**1. FETCH PHASE**\n• Read PC to get address\n• Fetch instruction from that memory address\n• Copy instruction to Instruction Register\n• Increment PC (PC = PC + 1)\n\n**2. DECODE PHASE**\n• Examine IR contents\n• Extract opcode (first digit)\n• Extract operand/address (last two digits)\n• Determine required operation\n• Prepare necessary components\n\n**3. EXECUTE PHASE**\n• Perform the actual operation:\n  - **Memory Access** (LDA/STA/ADD/SUB)\n  - **Arithmetic** (ADD/SUB in ALU)\n  - **Branch** (modify PC)\n  - **I/O** (INP/OUT)\n  - **Control** (HLT)\n• Store results if needed\n• Check for errors\n\n**4. (Optional) STORE PHASE**\n• Write results to memory/registers\n• Update status flags\n\n**Clock Cycles:**\nModern CPUs complete billions of cycles per second!"
+            ],
+            "what is inp": [
+                "**INP (Input) Instruction:** Code 901\n\n**Function:**\n• Pauses program execution\n• Waits for user to input number\n• Stores input in accumulator\n• Continues with next instruction\n\n**Format:** Just '901' (no address needed)\n\n**Usage Example:**\n```\n00 INP      ; Wait for input, store in Acc\n01 OUT      ; Display the input\n02 HLT      ; Stop program\n```\n\n**Behavior:**\n1. Program stops at INP\n2. User types number (-999 to +999)\n3. Number stored in accumulator\n4. Program continues with next instruction\n\n**Important Notes:**\n• Only one input per INP instruction\n• Input replaces accumulator contents\n• No validation - user can enter any 3-digit number\n• Program waits indefinitely for input\n\n**Real Analogy:**\nINP = Worker waiting for delivery\n• Stops current work\n• Waits for package\n• Puts package on workbench (Acc)\n• Continues work"
+            ],
+            "what is out": [
+                "**OUT (Output) Instruction:** Code 902\n\n**Function:**\n• Takes current accumulator value\n• Displays it to output screen/device\n• Accumulator unchanged\n• Program continues\n\n**Format:** Just '902' (no address needed)\n\n**Usage Example:**\n```\n00 INP      ; Get number\n01 STA 50   ; Store it\n02 LDA 50   ; Load it back\n03 ADD 50   ; Double it (Acc = Acc + mailbox50)\n04 OUT      ; Display result\n05 HLT\n```\n\n**Behavior:**\n1. Read accumulator value\n2. Display value in output area\n3. Continue to next instruction\n\n**Output Display:**\n• Usually appears in output box\n• One value per OUT instruction\n• Shows exact accumulator contents\n\n**Common Uses:**\n• Displaying results\n• Debugging (show intermediate values)\n• Program output\n\n**Real Analogy:**\nOUT = Worker showing completed work\n• Takes item from workbench (Acc)\n• Shows it to supervisor\n• Puts it back on workbench\n• Continues with next task"
+            ],
+            "what is hlt": [
+                "**HLT (Halt) Instruction:** Code 000\n\n**Function:**\n• Stops program execution\n• No further instructions processed\n• Computer enters idle state\n• Usually end of program\n\n**Format:** '000' or sometimes 'COB' (coffee break!)\n\n**Usage:**\n```\n00 INP\n01 OUT\n02 HLT    ; Program stops here\n03 ...    ; This never executes\n```\n\n**Important Notes:**\n• **Mandatory** - Programs should end with HLT\n• **Position** - Usually last instruction\n• **Execution** - Stops immediately when encountered\n• **Restart** - Need to reset to run again\n\n**What Happens After HLT:**\n• Program counter stops incrementing\n• No more fetch-decode-execute cycles\n• System waits for reset\n• Output remains displayed\n\n**Why Needed:**\n• Prevent running into data area\n• Clear program completion\n• Allow system reset\n• Avoid infinite execution\n\n**Real Analogy:**\nHLT = Worker's end of shift\n• Stops all work\n• Clears workbench\n• Goes home\n• Ready for next day"
+            ],
+            "what is brz": [
+                "**BRZ (Branch if Zero):** Code 7xx\n\n**Function:**\n• Checks if accumulator = 0\n• If YES: Jump to address XX (PC = XX)\n• If NO: Continue normally (PC = PC + 1)\n\n**Format:** 7 followed by 2-digit address\nExample: 725 = Branch to address 25 if Acc=0\n\n**Usage (If-Then Structure):**\n```\n00 INP       ; Get number\n01 BRZ 05    ; If 0, jump to 05\n02 LDA 99    ; Load 1 (assuming 99 contains 1)\n03 OUT       ; Display 1 (not zero)\n04 BRA 06    ; Skip zero case\n05 OUT       ; Display 0 (was zero)\n06 HLT\n```\n\n**Common Applications:**\n1. **If statements** - Conditional execution\n2. **Loops** - Continue until zero\n3. **Equality checks** - Compare with zero\n4. **Error checking** - Invalid input detection\n\n**Truth Table:**\nAccumulator | PC Action\n----------- | ---------\n= 0         | PC = XX (branch)\n≠ 0         | PC = PC + 1 (no branch)\n\n**Real Analogy:**\nBRZ = Supervisor's decision point\n• Check if workbench empty (Acc=0)\n• If empty: assign new task (branch)\n• If not empty: continue current task"
+            ],
+            "what is brp": [
+                "**BRP (Branch if Positive):** Code 8xx\n\n**Function:**\n• Checks if accumulator ≥ 0\n• If YES: Jump to address XX (PC = XX)\n• If NO: Continue normally (PC = PC + 1)\n\n**Note:** 'Positive' includes zero! BRP = Branch if non-negative\n\n**Format:** 8 followed by 2-digit address\nExample: 815 = Branch to 15 if Acc≥0\n\n**Usage (Check Positive Number):**\n```\n00 INP       ; Get number\n01 BRP 04    ; If ≥0, jump to 04\n02 LDA 98    ; Load -1 (assuming 98 has -1)\n03 OUT       ; Display -1 (negative case)\n04 HLT\n```\n\n**Common Uses:**\n1. **Range checking** - Ensure positive values\n2. **Absolute value** calculation\n3. **Error handling** - Negative number detection\n4. **Game logic** - Health points check\n\n**Real Analogy:**\nBRP = Quality check\n• Check if product weight ≥ 0\n• If acceptable: send to shipping\n• If not: send to rework"
+            ],
+            "what is sta": [
+                "**STA (Store Accumulator):** Code 3xx\n\n**Function:**\n• Copy accumulator value to memory\n• Memory location XX gets Acc value\n• Accumulator unchanged\n\n**Format:** 3 followed by 2-digit address\nExample: 342 = Store Acc to mailbox 42\n\n**Usage:**\n```\n00 INP      ; Get value to Acc\n01 STA 50   ; Store in mailbox 50\n02 LDA 50   ; Could load it back later\n...\n```\n\n**Important:**\n• **Overwrites** destination memory\n• **Non-destructive** to accumulator\n• **Memory update** - Changes stored data\n\n**Common Uses:**\n1. **Save results** from calculations\n2. **Store inputs** for later use\n3. **Swap values** between memory locations\n4. **Variable assignment** in programs\n\n**Real Analogy:**\nSTA = Worker putting item in storage\n• Take item from workbench (Acc)\n• Put it in specific storage bin (memory)\n• Workbench still has item (Acc unchanged)\n• Storage bin now contains item"
+            ],
+            "what is lda": [
+                "**LDA (Load Accumulator):** Code 5xx\n\n**Function:**\n• Copy memory value to accumulator\n• Acc = contents of mailbox XX\n• Memory unchanged\n\n**Format:** 5 followed by 2-digit address\nExample: 527 = Load mailbox 27 into Acc\n\n**Usage:**\n```\n00 LDA 50   ; Load value from mailbox 50\n01 ADD 51   ; Add value from mailbox 51\n02 STA 52   ; Store result in mailbox 52\n```\n\n**Important:**\n• **Overwrites** accumulator\n• **Non-destructive** to memory\n• **Data transfer** - Memory → Accumulator\n\n**Common Uses:**\n1. **Variable access** - Get stored values\n2. **Parameter loading** - Prepare for operations\n3. **Data movement** - Between memory and Acc\n4. **Constant loading** - Load fixed values\n\n**Real Analogy:**\nLDA = Worker getting item from storage\n• Go to specific storage bin (memory address)\n• Take item from bin\n• Put on workbench (Acc)\n• Storage bin still has item (memory unchanged)"
+            ],
+            "what is add": [
+                "**ADD:** Code 1xx\n\n**Function:**\n• Add memory value to accumulator\n• Acc = Acc + contents of mailbox XX\n• Memory unchanged\n\n**Format:** 1 followed by 2-digit address\nExample: 145 = Add mailbox 45 to Acc\n\n**Usage:**\n```\n00 LDA 50   ; Load first number\n01 ADD 51   ; Add second number\n02 STA 52   ; Store sum\n```\n\n**Important Notes:**\n• **Arithmetic operation** - Performs addition\n• **Overflow possible** - Results beyond ±999\n• **Two's complement** - Handles negative numbers\n\n**Mathematical Properties:**\n• Commutative: ADD X then ADD Y = ADD Y then ADD X\n• Associative: Multiple ADD operations can be reordered\n\n**Real Analogy:**\nADD = Worker combining items\n• Take item from workbench (Acc)\n• Get another from storage (memory)\n• Combine them\n• Put result on workbench"
+            ],
+            "what is sub": [
+                "**SUB (Subtract):** Code 2xx\n\n**Function:**\n• Subtract memory value from accumulator\n• Acc = Acc - contents of mailbox XX\n• Memory unchanged\n\n**Format:** 2 followed by 2-digit address\nExample: 263 = Subtract mailbox 63 from Acc\n\n**Usage:**\n```\n00 LDA 50   ; Load first number\n01 SUB 51   ; Subtract second number\n02 BRP 04   ; Check if result ≥ 0\n03 HLT      ; Negative result\n04 ...      ; Continue\n```\n\n**Important:**\n• **Order matters** - Acc - Memory, not Memory - Acc\n• **Negative results** possible\n• **BRP useful** after subtraction\n\n**Common Uses:**\n1. **Subtraction calculations**\n2. **Comparison operations** (check if A > B)\n3. **Decrementing counters**\n4. **Difference calculation**\n\n**Real Analogy:**\nSUB = Worker removing parts\n• Take assembly from workbench (Acc)\n• Remove component from storage (memory)\n• Result on workbench"
+            ],
+            "write lmc program for addition": [
+                "**LMC Program: Add Two Numbers**\n\n**Problem:** Input two numbers, output their sum\n\n**Solution 1: Basic Addition**\n```\n00 INP       ; Input first number\n01 STA 50    ; Store in mailbox 50\n02 INP       ; Input second number\n03 ADD 50    ; Add first number\n04 OUT       ; Output sum\n05 HLT       ; Stop\n50 DAT       ; Data storage\n```\n\n**Solution 2: With Memory Variables**\n```\n          INP\n          STA FIRST\n          INP\n          STA SECOND\n          LDA FIRST\n          ADD SECOND\n          OUT\n          HLT\nFIRST     DAT 000\nSECOND    DAT 000\n```\n\n**Solution 3: Add Three Numbers**\n```\n          INP\n          STA 90\n          INP\n          ADD 90\n          STA 90\n          INP\n          ADD 90\n          OUT\n          HLT\n```\n\n**Step-by-step Execution (Solution 1):**\n1. INP: Wait for first number, say 7\n2. STA 50: Store 7 in mailbox 50\n3. INP: Wait for second number, say 3\n4. ADD 50: Acc = 3 + 7 = 10\n5. OUT: Display 10\n6. HLT: Stop"
+            ],
+            "write lmc program for subtraction": [
+                "**LMC Program: Subtract Two Numbers**\n\n**Problem:** Input two numbers, output first minus second\n\n**Solution 1: Basic Subtraction**\n```\n00 INP       ; Input first number (A)\n01 STA 50    ; Store A\n02 INP       ; Input second number (B)\n03 STA 51    ; Store B\n04 LDA 50    ; Load A\n05 SUB 51    ; A - B\n06 OUT       ; Output result\n07 HLT       ; Stop\n50 DAT       ; For A\n51 DAT       ; For B\n```\n\n**Solution 2: Check for Negative Result**\n```\n          INP        ; Get A\n          STA A\n          INP        ; Get B\n          STA B\n          LDA A\n          SUB B      ; A - B\n          BRP POS    ; If ≥0, jump to POS\n          LDA ZERO   ; Load 0 for negative case\n          OUT        ; Output 0\n          BRA END    ; Skip to end\nPOS       OUT        ; Output positive result\nEND       HLT\nA         DAT\nB         DAT\nZERO      DAT 000\n```\n\n**Solution 3: Absolute Difference**\n```\n          INP        ; Get A\n          STA A\n          INP        ; Get B\n          STA B\n          LDA A\n          SUB B      ; A - B\n          BRP STORE  ; If ≥0, go store\n          LDA B      ; Else do B - A\n          SUB A\nSTORE     STA RESULT\n          OUT\n          HLT\nA         DAT\nB         DAT\nRESULT    DAT\n```"
+            ],
+            "write lmc program for multiplication": [
+                "**LMC Program: Multiplication (Repeated Addition)**\n\n**Problem:** Multiply two positive numbers A × B\n\n**Solution: Using Loop Counter**\n```\n          INP        ; Get A (multiplicand)\n          STA NUM1\n          INP        ; Get B (multiplier)\n          STA COUNT  ; Use as counter\n          LDA ZERO   ; Initialize result to 0\n          STA RESULT\nLOOP      LDA COUNT  ; Check counter\n          BRZ DONE   ; If 0, done\n          LDA RESULT ; Add NUM1 to result\n          ADD NUM1\n          STA RESULT\n          LDA COUNT  ; Decrement counter\n          SUB ONE\n          STA COUNT\n          BRA LOOP   ; Repeat\nDONE      LDA RESULT ; Output result\n          OUT\n          HLT\nNUM1      DAT        ; Multiplicand\nCOUNT     DAT        ; Counter\nRESULT    DAT        ; Result\nZERO      DAT 000\nONE       DAT 001\n```\n\n**Step-by-step Example:** 3 × 4\n1. Input 3 (NUM1 = 3)\n2. Input 4 (COUNT = 4)\n3. RESULT = 0\n4. Loop:\n   Count=4 ≠0 → RESULT=0+3=3, Count=3\n   Count=3 ≠0 → RESULT=3+3=6, Count=2\n   Count=2 ≠0 → RESULT=6+3=9, Count=1\n   Count=1 ≠0 → RESULT=9+3=12, Count=0\n5. Count=0 → Output 12\n\n**Optimized Version (Fewer Instructions):**\n```\n          INP\n          STA A\n          INP\n          STA B\n          LDA ZERO\nLOOP      BRZ DONE\n          ADD A\n          STA SUM\n          LDA B\n          SUB ONE\n          STA B\n          BRA LOOP\nDONE      LDA SUM\n          OUT\n          HLT\nA         DAT\nB         DAT\nSUM       DAT 000\nZERO      DAT 000\nONE       DAT 001\n```"
+            ],
+            "write lmc program for division": [
+                "**LMC Program: Integer Division**\n\n**Problem:** Divide A by B (integer division, no remainder)\n\n**Solution: Repeated Subtraction**\n```\n          INP        ; Get A (dividend)\n          STA DIVIDEND\n          INP        ; Get B (divisor)\n          STA DIVISOR\n          LDA ZERO   ; Initialize quotient\n          STA QUOTIENT\nLOOP      LDA DIVIDEND\n          BRZ DONE   ; If dividend = 0, done\n          SUB DIVISOR ; Subtract divisor\n          BRP CONTINUE ; If ≥0, continue\n          BRA DONE   ; Else done (negative)\nCONTINUE  STA DIVIDEND ; Update dividend\n          LDA QUOTIENT ; Increment quotient\n          ADD ONE\n          STA QUOTIENT\n          BRA LOOP   ; Repeat\nDONE      LDA QUOTIENT ; Output quotient\n          OUT\n          HLT\nDIVIDEND  DAT\nDIVISOR   DAT\nQUOTIENT  DAT 000\nZERO      DAT 000\nONE       DAT 001\n```\n\n**Example:** 10 ÷ 3\n1. DIVIDEND=10, DIVISOR=3, QUOTIENT=0\n2. Loop:\n   10-3=7≥0 → DIVIDEND=7, QUOTIENT=1\n   7-3=4≥0 → DIVIDEND=4, QUOTIENT=2\n   4-3=1≥0 → DIVIDEND=1, QUOTIENT=3\n   1-3=-2<0 → Done\n3. Output QUOTIENT=3\n\n**With Remainder Output:**\n```\n          ... (same as above until HLT)\nDONE      LDA QUOTIENT\n          OUT        ; Output quotient\n          LDA DIVIDEND\n          OUT        ; Output remainder\n          HLT\n```"
+            ],
+            "write lmc program for factorial": [
+                "**LMC Program: Factorial (n!)**\n\n**Problem:** Calculate factorial of input number n\n\n**Solution:**\n```\n          INP        ; Get n\n          STA N\n          LDA ONE    ; Initialize result = 1\n          STA RESULT\nLOOP      LDA N      ; Check if n > 0\n          BRZ DONE   ; If n=0, done\n          STA MULT   ; Store n as multiplier\n          LDA ZERO   ; Initialize temp sum\n          STA TEMP\nMULTLOOP  LDA MULT   ; Multiply RESULT × n\n          BRZ MULTDONE\n          LDA TEMP\n          ADD RESULT\n          STA TEMP\n          LDA MULT\n          SUB ONE\n          STA MULT\n          BRA MULTLOOP\nMULTDONE  LDA TEMP   ; Update result\n          STA RESULT\n          LDA N      ; Decrement n\n          SUB ONE\n          STA N\n          BRA LOOP   ; Repeat\nDONE      LDA RESULT ; Output n!\n          OUT\n          HLT\nN         DAT\nRESULT    DAT 001\nMULT      DAT\nTEMP      DAT 000\nONE       DAT 001\nZERO      DAT 000\n```\n\n**Simpler Version (if multiplication available):**\n```\n          INP\n          STA COUNTER\n          LDA ONE\n          STA RESULT\nLOOP      LDA COUNTER\n          BRZ DONE\n          STA MULT\n          LDA RESULT\nMULTIPLY  BRZ MULTDONE\n          ADD RESULT\n          STA RESULT\n          LDA MULT\n          SUB ONE\n          STA MULT\n          BRA MULTIPLY\nMULTDONE  LDA COUNTER\n          SUB ONE\n          STA COUNTER\n          BRA LOOP\nDONE      LDA RESULT\n          OUT\n          HLT\n```"
+            ],
+
+            // ============================
+            // 💻 PROGRAMMING BASICS - EXPANDED
+            // ============================
+            "what is variable": [
+                "**Variable:** Named storage location in memory holding a value.\n\n**Key Concepts:**\n• **Name** - Identifier (e.g., 'score', 'total')\n• **Value** - Data stored (e.g., 100, 'Hello')\n• **Type** - Kind of data (integer, string, float)\n• **Address** - Memory location\n• **Scope** - Where variable is accessible\n\n**Declaration Examples:**\n```python\n# Python\nage = 25\nname = \"Alice\"\nprice = 19.99\n```\n```javascript\n// JavaScript\nlet count = 10;\nconst PI = 3.14;\nvar message = \"Hello\";\n```\n```java\n// Java\nint score = 100;\nString name = \"Bob\";\ndouble average = 85.5;\n```\n\n**Variable Naming Rules:**\n1. Start with letter or underscore\n2. Can contain letters, digits, underscores\n3. Case-sensitive (age ≠ Age)\n4. No spaces or special characters\n5. Cannot be reserved words (if, while, etc.)\n\n**Good Practices:**\n• Descriptive names (totalPrice vs t)\n• Consistent naming (camelCase or snake_case)\n• Initialize variables\n• Use meaningful names"
+            ],
+            "what is constant": [
+                "**Constant:** Variable whose value cannot change after initialization.\n\n**Purpose:**\n• Store fixed values\n• Improve code readability\n• Prevent accidental changes\n• Define configuration values\n\n**Examples:**\n```python\n# Python (convention, not enforced)\nPI = 3.14159\nMAX_USERS = 100\nDAYS_IN_WEEK = 7\n```\n```javascript\n// JavaScript\nconst TAX_RATE = 0.15;\nconst API_URL = \"https://api.example.com\";\nconst MAX_RETRIES = 3;\n```\n```java\n// Java\nfinal double PI = 3.14159;\nfinal int MAX_SIZE = 100;\nfinal String COMPANY_NAME = \"TechCorp\";\n```\n\n**When to Use Constants:**\n1. **Mathematical constants** - π, e, gravitational constant\n2. **Configuration values** - Max attempts, timeouts\n3. **Fixed strings** - Error messages, URLs\n4. **Magic numbers** - Replace literals with named constants\n\n**Benefits:**\n• **Readability** - Names convey meaning better than numbers\n• **Maintainability** - Change value in one place\n• **Safety** - Prevents accidental modification\n• **Performance** - Some compilers can optimize constants"
+            ],
+            "what is data type": [
+                "**Data Type:** Classification specifying type of data a variable can hold.\n\n**Primitive/Basic Types:**\n\n**1. Integer Types**\n• Whole numbers (positive, negative, zero)\n• Examples: int, short, long, byte\n• Range varies by language and size\n\n**2. Floating-point Types**\n• Numbers with decimal points\n• Examples: float, double\n• Approximate real numbers\n\n**3. Character Type**\n• Single character\n• Examples: char (C/Java), str with length 1 (Python)\n• Usually 1 byte (ASCII) or 2 bytes (Unicode)\n\n**4. Boolean Type**\n• True or false values\n• Examples: bool, boolean\n• Used in conditions\n\n**Composite Types:**\n• **Arrays** - Collection of same type\n• **Strings** - Sequence of characters\n• **Structures/Classes** - User-defined types\n• **Pointers/References** - Memory addresses\n\n**Type Importance:**\n• Determines operations allowed\n• Defines memory allocation\n• Affects performance\n• Enables type checking"
+            ],
+            "what is loop": [
+                "**Loop:** Control structure repeating code block multiple times.\n\n**Types of Loops:**\n\n**1. For Loop**\n• Known number of iterations\n• Counter-controlled\n• Syntax varies by language\n\n**Examples:**\n```python\n# Python\nfor i in range(5):\n    print(i)\n```\n```javascript\n// JavaScript\nfor(let i = 0; i < 5; i++) {\n    console.log(i);\n}\n```\n\n**2. While Loop**\n• Condition-controlled\n• May run zero or more times\n• Check condition before each iteration\n\n**Example:**\n```python\ncount = 0\nwhile count < 5:\n    print(count)\n    count += 1\n```\n\n**3. Do-While Loop**\n• Condition-controlled\n• Always runs at least once\n• Check condition after iteration\n\n**Example (C/Java):**\n```java\nint i = 0;\ndo {\n    System.out.println(i);\n    i++;\n} while (i < 5);\n```\n\n**Loop Control Statements:**\n• **break** - Exit loop immediately\n• **continue** - Skip to next iteration\n• **pass** (Python) - Do nothing\n\n**Common Patterns:**\n1. **Counter Loop** - for(i=0; i<n; i++)\n2. **Collection Iteration** - for item in list\n3. **Condition Loop** - while(condition)\n4. **Infinite Loop** - while(true) with break\n\n**LMC Equivalent:** BRZ/BRP with counters"
+            ],
+            "what is function": [
+                "**Function:** Reusable block of code performing specific task.\n\n**Components:**\n1. **Function Name** - Identifier\n2. **Parameters** - Input values\n3. **Return Value** - Output result\n4. **Function Body** - Code to execute\n\n**Benefits:**\n• **Reusability** - Write once, use many times\n• **Modularity** - Break problems into parts\n• **Abstraction** - Hide implementation details\n• **Testing** - Test components separately\n\n**Examples:**\n```python\n# Python function\ndef add_numbers(a, b):\n    \"\"\"Return sum of a and b\"\"\"\n    result = a + b\n    return result\n\n# Usage\nsum = add_numbers(5, 3)  # sum = 8\n```\n```javascript\n// JavaScript function\nfunction multiply(x, y) {\n    return x * y;\n}\n\n// Usage\nlet product = multiply(4, 6);  // product = 24\n```\n\n**Types of Functions:**\n1. **Built-in** - Language-provided (print(), len())\n2. **User-defined** - Programmer-created\n3. **Pure Functions** - Same input → same output, no side effects\n4. **Higher-order Functions** - Take functions as parameters\n\n**Function vs Procedure:**\n• **Function** returns value\n• **Procedure** performs action, no return value\n\n**LMC Analogy:** Subroutine using BRA to jump and back"
+            ],
+            "what is array": [
+                "**Array:** Collection of elements, same type, contiguous memory.\n\n**Characteristics:**\n• **Fixed size** (usually)\n• **Indexed access** - elements accessed by position\n• **Contiguous memory** - elements stored together\n• **Homogeneous** - all elements same type\n\n**Declaration Examples:**\n```python\n# Python list (dynamic array)\nnumbers = [1, 2, 3, 4, 5]\nfruits = ['apple', 'banana', 'orange']\n```\n```javascript\n// JavaScript array\nlet scores = [95, 87, 92, 88];\nlet names = ['Alice', 'Bob', 'Charlie'];\n```\n```java\n// Java array\nint[] ages = {25, 30, 35, 40};\nString[] colors = {\"red\", \"green\", \"blue\"};\n```\n\n**Key Operations:**\n1. **Access** - array[index]\n2. **Update** - array[index] = value\n3. **Traversal** - loop through all elements\n4. **Search** - find element\n5. **Sort** - arrange elements\n\n**Array Indices:**\n• Start at 0 in most languages\n• End at length-1\n• Example: arr[0] = first element\n\n**Multidimensional Arrays:**\n• 2D arrays - rows and columns\n• 3D arrays - cubes of data\n• Example: matrix[2][3] = third row, fourth column\n\n**Memory Representation:**\n• Base address + (index × element size)\n• Fast random access\n• Cache-friendly (spatial locality)\n\n**LMC Analogy:** Multiple consecutive mailboxes"
+            ],
+            "what is syntax error": [
+                "**Syntax Error:** Violation of language grammar rules.\n\n**Characteristics:**\n• **Detected at compile/interpret time**\n• **Prevents code execution**\n• **Usually easy to fix**\n• **Clear error messages**\n\n**Common Examples:**\n\n**1. Missing/Mismatched Punctuation**\n```python\n# Missing colon\nif x > 5   # Error: expected ':'\n    print(x)\n```\n```javascript\n// Missing parenthesis\nconsole.log(\"Hello\"   // Error: missing ')'\n```\n\n**2. Misspelled Keywords**\n```python\ndef function_name():  # Correct\ndef funtion_name():   # Error: misspelled\n```\n\n**3. Incorrect Indentation**\n```python\nif True:\nprint(\"Hello\")  # Error: expected indented block\n```\n\n**4. Invalid Variable Names**\n```python\n123variable = 5  # Error: cannot start with digit\nmy-var = 10      # Error: hyphen not allowed\n```\n\n**5. Type Errors in Syntax**\n```python\nx = \"Hello\" + 5  # Error in some languages\n```\n\n**How to Fix:**\n1. Read error message carefully\n2. Check line number mentioned\n3. Verify syntax against language rules\n4. Use IDE with syntax highlighting\n5. Compile/interpret frequently\n\n**Prevention:**\n• Learn language syntax well\n• Use code editors with linting\n• Write small sections, test often\n• Follow style guides"
+            ],
+            "what is runtime error": [
+                "**Runtime Error:** Error occurring during program execution.\n\n**Characteristics:**\n• **Occurs at runtime** - after successful compilation\n• **Causes program crash/termination**\n• **May depend on input/data**\n• **Harder to detect beforehand**\n\n**Common Types:**\n\n**1. Division by Zero**\n```python\nx = 10 / 0  # ZeroDivisionError\n```\n\n**2. Array Index Out of Bounds**\n```python\narr = [1, 2, 3]\nprint(arr[5])  # IndexError\n```\n\n**3. Null/Undefined Reference**\n```javascript\nlet obj = null;\nconsole.log(obj.property);  // TypeError\n```\n\n**4. File Not Found**\n```python\nfile = open(\"nonexistent.txt\", \"r\")  # FileNotFoundError\n```\n\n**5. Type Conversion Errors**\n```python\nnum = int(\"abc\")  # ValueError\n```\n\n**6. Out of Memory**\n• Program uses more memory than available\n\n**7. Stack Overflow**\n• Infinite recursion\n\n**Handling Runtime Errors:**\n\n**Try-Catch Blocks:**\n```python\ntry:\n    result = 10 / 0\nexcept ZeroDivisionError:\n    print(\"Cannot divide by zero\")\n```\n\n**Prevention Strategies:**\n1. **Input Validation** - Check user input\n2. **Boundary Checking** - Validate array indices\n3. **Null Checking** - Verify references\n4. **Resource Management** - Check file existence\n5. **Memory Management** - Monitor usage\n\n**Debugging:**\n• Use debugger tools\n• Add print statements\n• Check error logs\n• Test with different inputs"
+            ],
+            "what is logical error": [
+                "**Logical Error:** Program runs but produces incorrect results.\n\n**Characteristics:**\n• **Most insidious error type**\n• **Program compiles and runs**\n• **Output is wrong/unexpected**\n• **Hardest to detect and fix**\n\n**Common Examples:**\n\n**1. Incorrect Formula**\n```python\n# Wrong area calculation\narea = length * 2  # Should be length * width\n```\n\n**2. Off-by-One Errors**\n```python\n# Loop runs one extra time\nfor i in range(1, 11):  # Goes 1-10\n    # Should be range(10) for 0-9\n```\n\n**3. Incorrect Condition**\n```python\n# Wrong comparison\nif age >= 18:\n    print(\"Adult\")\nelse:\n    print(\"Child\")\n# What about age = 18?\n```\n\n**4. Wrong Operator**\n```python\n# Should be addition\ntotal = price * quantity  # Multiplication instead\n```\n\n**5. Algorithm Errors**\n• Wrong sorting algorithm implementation\n• Incorrect search logic\n• Flawed mathematical derivation\n\n**6. Data Type Misunderstanding**\n```python\n# Integer division vs float division\naverage = total / count  # In Python 2, this was integer division\n```\n\n**Detection Methods:**\n1. **Testing** - Comprehensive test cases\n2. **Code Review** - Another programmer checks\n3. **Debugging** - Step through execution\n4. **Assertions** - Verify assumptions\n5. **Unit Testing** - Test individual components\n\n**Prevention:**\n1. **Clear Requirements** - Understand problem fully\n2. **Planning** - Design before coding\n3. **Incremental Development** - Build and test small parts\n4. **Documentation** - Comment complex logic\n5. **Peer Review** - Get feedback\n\n**Famous Examples:**\n• **Mars Climate Orbiter** - Unit conversion error\n• **Therac-25** - Radiation overdose due to race condition\n• **Ariane 5** - Software reuse error"
+            ],
+            "what is debugging": [
+                "**Debugging:** Process of finding and fixing errors in code.\n\n**Debugging Process:**\n\n**1. REPRODUCTION**\n• Make error occur consistently\n• Identify steps to reproduce\n• Note error messages\n\n**2. LOCALIZATION**\n• Find where error occurs\n• Narrow down suspicious code\n• Use print statements or debugger\n\n**3. DIAGNOSIS**\n• Determine error cause\n• Understand why it happens\n• Consider edge cases\n\n**4. FIXING**\n• Implement correction\n• Make minimal changes\n• Preserve existing functionality\n\n**5. VERIFICATION**\n• Test the fix\n• Ensure no new errors introduced\n• Update tests if needed\n\n**Debugging Techniques:**\n\n**Print Debugging:**\n```python\nprint(f\"Value of x: {x}\")  # Simple but effective\nprint(f\"Entering function {function_name}\")\n```\n\n**Debugger Tools:**\n• **Breakpoints** - Pause execution at specific lines\n• **Step Through** - Execute line by line\n• **Watch Variables** - Monitor values\n• **Call Stack** - See function calls\n\n**Common Debuggers:**\n• **Python** - pdb, IDE debuggers\n• **JavaScript** - Browser DevTools, VS Code\n• **Java** - Eclipse, IntelliJ debugger\n\n**Systematic Approaches:**\n1. **Binary Search** - Comment out half the code\n2. **Rubber Duck Debugging** - Explain code to someone/thing\n3. **Scientific Method** - Hypothesis, experiment, conclusion\n4. **Time Travel Debugging** - Record and replay execution\n\n**Prevention Strategies:**\n• Write clear, simple code\n• Use meaningful variable names\n• Add comments for complex logic\n• Write unit tests\n• Use version control\n• Code review by others\n\n**Debugging Mindset:**\n• Assume bug is in your code\n• Question your assumptions\n• Take breaks when stuck\n• Document what you learn"
+            ],
+
+            // ============================
+            // 🌐 WEB & INTERNET - EXPANDED
+            // ============================
+            "what is html": [
+                "**HTML (HyperText Markup Language):** Standard language for creating web pages.\n\n**Key Concepts:**\n• **Markup Language** - Uses tags to structure content\n• **NOT a programming language** - No logic, just structure\n• **Platform-independent** - Works on all devices\n• **Current Version:** HTML5\n\n**Basic Structure:**\n```html\n<!DOCTYPE html>\n<html>\n<head>\n    <title>Page Title</title>\n</head>\n<body>\n    <h1>My First Heading</h1>\n    <p>My first paragraph.</p>\n</body>\n</html>\n```\n\n**Common Elements:**\n1. **Headings** - `<h1>` to `<h6>`\n2. **Paragraphs** - `<p>`\n3. **Links** - `<a href=\"url\">text</a>`\n4. **Images** - `<img src=\"image.jpg\" alt=\"description\">`\n5. **Lists** - `<ul>`, `<ol>`, `<li>`\n6. **Tables** - `<table>`, `<tr>`, `<td>`\n7. **Forms** - `<form>`, `<input>`, `<button>`\n\n**HTML5 New Features:**\n• Semantic elements (`<header>`, `<footer>`, `<article>`)\n• Multimedia (`<video>`, `<audio>`)\n• Canvas drawing\n• Local storage\n• Geolocation\n\n**Role in Web Development:**\n• **Structure** - Content organization\n• **Semantics** - Meaning of content\n• **Accessibility** - Screen reader support\n• **SEO** - Search engine optimization"
+            ],
+            "what is css": [
+                "**CSS (Cascading Style Sheets):** Language for styling HTML documents.\n\n**Purpose:**\n• Separate content from presentation\n• Control layout, colors, fonts\n• Enable responsive design\n• Create animations and transitions\n\n**Basic Syntax:**\n```css\nselector {\n    property: value;\n    another-property: value;\n}\n```\n\n**Example:**\n```css\nh1 {\n    color: blue;\n    font-size: 24px;\n    text-align: center;\n}\n\n.button {\n    background-color: #4CAF50;\n    border: none;\n    padding: 10px 20px;\n    border-radius: 5px;\n}\n```\n\n**CSS Selectors:**\n1. **Element** - `p`, `div`, `h1`\n2. **Class** - `.className`\n3. **ID** - `#idName`\n4. **Attribute** - `[type=\"text\"]`\n5. **Pseudo-class** - `:hover`, `:focus`\n6. **Pseudo-element** - `::before`, `::after`\n\n**Box Model (Fundamental):**\n• **Content** - Actual content\n• **Padding** - Space around content\n• **Border** - Edge around padding\n• **Margin** - Space outside border\n\n**Layout Systems:**\n1. **Normal Flow** - Default\n2. **Flexbox** - One-dimensional layout\n3. **Grid** - Two-dimensional layout\n4. **Positioning** - Absolute, relative, fixed\n\n**Responsive Design:**\n```css\n@media (max-width: 600px) {\n    .container {\n        flex-direction: column;\n    }\n}\n```\n\n**CSS Preprocessors:**\n• **SASS/SCSS** - Variables, nesting, mixins\n• **LESS** - Similar to SASS\n• **PostCSS** - Transform CSS with JavaScript"
+            ],
+            "what is js": [
+                "**JavaScript (JS):** Programming language for interactive web pages.\n\n**Key Features:**\n• **High-level** - Human-readable syntax\n• **Interpreted** - Executed line by line\n• **Dynamic** - Types determined at runtime\n• **Multi-paradigm** - OOP, functional, procedural\n• **Event-driven** - Responds to user actions\n\n**Where JavaScript Runs:**\n1. **Web Browsers** - Front-end interactivity\n2. **Node.js** - Server-side programming\n3. **Mobile Apps** - React Native, Ionic\n4. **Desktop Apps** - Electron\n5. **IoT Devices** - Smart devices\n\n**Basic Syntax:**\n```javascript\n// Variables\nlet message = \"Hello\";\nconst PI = 3.14;\nvar oldWay = \"Avoid\";\n\n// Functions\nfunction greet(name) {\n    return `Hello, ${name}!`;\n}\n\n// Event handling\ndocument.getElementById(\"myButton\").onclick = function() {\n    alert(\"Button clicked!\");\n};\n```\n\n**DOM Manipulation:**\n```javascript\n// Get element\nlet element = document.querySelector(\".my-class\");\n\n// Change content\nelement.textContent = \"New text\";\n\n// Change style\nelement.style.color = \"red\";\n\n// Add event listener\nelement.addEventListener(\"click\", function() {\n    console.log(\"Clicked!\");\n});\n```\n\n**Modern JavaScript (ES6+):**\n• **Arrow functions** - `() => {}`\n• **Promises/Async-await** - Asynchronous programming\n• **Classes** - Object-oriented programming\n• **Modules** - Code organization\n• **Destructuring** - Extract values from objects/arrays\n\n**JavaScript Ecosystem:**\n• **Frameworks** - React, Angular, Vue\n• **Libraries** - jQuery, Lodash, Moment.js\n• **Build Tools** - Webpack, Babel, npm\n• **Testing** - Jest, Mocha, Cypress"
+            ],
+            "what is server": [
+                "**Server:** Computer/program providing services to other computers (clients).\n\n**Types of Servers:**\n\n**1. Web Server**\n• Serves web pages (Apache, Nginx)\n• Handles HTTP requests\n• Static content delivery\n\n**2. Application Server**\n• Runs web applications\n• Business logic processing\n• Examples: Node.js, Tomcat, Django\n\n**3. Database Server**\n• Stores and manages data\n• Examples: MySQL, PostgreSQL, MongoDB\n\n**4. File Server**\n• Stores and shares files\n• Examples: FTP server, Samba\n\n**5. Mail Server**\n• Handles email (SMTP, POP3, IMAP)\n• Examples: Postfix, Exchange\n\n**6. DNS Server**\n• Translates domain names to IP addresses\n• Internet's phonebook\n\n**Server Hardware Characteristics:**\n• **High Reliability** - Redundant components\n• **24/7 Operation** - Designed for constant use\n• **Multiple Processors** - Handle many requests\n• **Large RAM** - Serve many users\n• **RAID Storage** - Data redundancy\n• **Remote Management** - Administer without physical access\n\n**Server Software Stack (Common):**\n• **LAMP** - Linux, Apache, MySQL, PHP\n• **MEAN** - MongoDB, Express, Angular, Node.js\n• **MERN** - MongoDB, Express, React, Node.js\n• **JAMstack** - JavaScript, APIs, Markup\n\n**Cloud Servers:**\n• **IaaS** - Infrastructure as a Service (AWS EC2, Azure VMs)\n• **PaaS** - Platform as a Service (Heroku, Google App Engine)\n• **SaaS** - Software as a Service (Gmail, Office 365)\n\n**Client-Server Model:**\n1. **Client** sends request\n2. **Server** receives request\n3. **Server** processes request\n4. **Server** sends response\n5. **Client** receives response"
+            ],
+            "what is ip address": [
+                "**IP Address (Internet Protocol Address):** Unique identifier for devices on network.\n\n**Purpose:**\n• Device identification\n• Location addressing\n• Network communication\n• Routing data packets\n\n**IP Address Format:**\n\n**IPv4 (Most Common):**\n• 32 bits = 4 bytes\n• Dotted decimal notation: 192.168.1.1\n• 4.3 billion possible addresses\n• Example: 192.168.0.1\n\n**IPv6 (New Standard):**\n• 128 bits = 16 bytes\n• Hexadecimal notation: 2001:0db8:85a3:0000:0000:8a2e:0370:7334\n• 340 undecillion addresses (3.4×10³⁸)\n• Solves IPv4 exhaustion\n\n**IP Address Classes (IPv4):**\n• **Class A** - 1.0.0.1 to 126.255.255.254 (Large networks)\n• **Class B** - 128.0.0.1 to 191.255.255.254 (Medium networks)\n• **Class C** - 192.0.0.1 to 223.255.255.254 (Small networks)\n• **Class D** - Multicast (224.0.0.0 to 239.255.255.255)\n• **Class E** - Experimental (240.0.0.0 to 255.255.255.255)\n\n**Types of IP Addresses:**\n1. **Public IP** - Internet-facing, unique globally\n2. **Private IP** - Internal network, not routable on internet\n   • 10.0.0.0 - 10.255.255.255\n   • 172.16.0.0 - 172.31.255.255\n   • 192.168.0.0 - 192.168.255.255\n3. **Static IP** - Doesn't change\n4. **Dynamic IP** - Changes periodically (from DHCP)\n5. **Loopback** - 127.0.0.1 (localhost)\n\n**How IP Addresses Work:**\n1. Device connects to network\n2. Gets IP from DHCP server or manually set\n3. Sends data with source/destination IP\n4. Routers use IP to forward packets\n5. Destination receives data\n\n**IP vs MAC Address:**\n• **IP Address** - Logical, can change, network layer\n• **MAC Address** - Physical, burned in, data link layer\n\n**Finding Your IP:**\n• **Windows:** `ipconfig` in Command Prompt\n• **Mac/Linux:** `ifconfig` or `ip addr` in Terminal\n• **Websites:** WhatIsMyIP.com\n\n**IP Address Allocation:**\n• **IANA** - Internet Assigned Numbers Authority\n• **RIRs** - Regional Internet Registries (ARIN, RIPE, APNIC)\n• **ISPs** - Internet Service Providers\n• **Organizations** - Companies, schools, governments"
+            ],
+            "what is dns": [
+                "**DNS (Domain Name System):** Internet's phonebook translating domain names to IP addresses.\n\n**Why DNS is Needed:**\n• Humans remember names (google.com)\n• Computers use numbers (172.217.164.142)\n• DNS bridges this gap\n\n**DNS Resolution Process:**\n1. **User** types example.com in browser\n2. **Browser** checks local cache\n3. **OS** checks hosts file\n4. **Resolver** (ISP) checks its cache\n5. **Root Server** - Directs to TLD server\n6. **TLD Server** (.com) - Directs to authoritative server\n7. **Authoritative Server** - Returns IP address\n8. **Browser** connects to IP\n\n**DNS Record Types:**\n1. **A Record** - IPv4 address\n2. **AAAA Record** - IPv6 address\n3. **CNAME** - Canonical name (alias)\n4. **MX** - Mail exchange (email)\n5. **TXT** - Text information\n6. **NS** - Name server\n7. **SOA** - Start of authority\n\n**DNS Hierarchy:**\n• **Root** - . (13 root servers worldwide)\n• **TLD** - .com, .org, .net, .edu, .country\n• **Second-level** - example in example.com\n• **Subdomain** - www in www.example.com\n\n**Common DNS Tools:**\n• `nslookup` - Query DNS servers\n• `dig` - Detailed DNS information\n• `whois` - Domain registration info\n\n**DNS Importance:**\n• Essential for internet navigation\n• Enables load balancing\n• Supports email delivery\n• Allows domain changes without IP changes\n\n**DNS Security (DNSSEC):**\n• Prevents DNS spoofing\n• Adds digital signatures\n• Ensures response authenticity"
+            ],
+            "what is http": [
+                "**HTTP (HyperText Transfer Protocol):** Foundation of web data communication.\n\n**How HTTP Works:**\n1. **Client** sends HTTP request\n2. **Server** processes request\n3. **Server** sends HTTP response\n4. **Client** renders response\n\n**HTTP Request Structure:**\n```\nGET /index.html HTTP/1.1\nHost: www.example.com\nUser-Agent: Mozilla/5.0\nAccept: text/html\n\n[Optional request body]\n```\n\n**HTTP Response Structure:**\n```\nHTTP/1.1 200 OK\nDate: Mon, 23 May 2022 22:38:34 GMT\nContent-Type: text/html; charset=UTF-8\nContent-Length: 138\n\n<!DOCTYPE html>\n<html>...</html>\n```\n\n**HTTP Methods (Verbs):**\n1. **GET** - Retrieve data\n2. **POST** - Submit data\n3. **PUT** - Update data\n4. **DELETE** - Remove data\n5. **PATCH** - Partial update\n6. **HEAD** - GET without body\n7. **OPTIONS** - Available methods\n\n**HTTP Status Codes:**\n• **1xx** - Informational\n• **2xx** - Success (200 OK, 201 Created)\n• **3xx** - Redirection (301 Moved, 304 Not Modified)\n• **4xx** - Client Error (404 Not Found, 403 Forbidden)\n• **5xx** - Server Error (500 Internal Error, 503 Unavailable)\n\n**HTTP vs HTTPS:**\n• **HTTP** - Unencrypted\n• **HTTPS** - HTTP + SSL/TLS encryption\n• Padlock icon in browser\n• Required for secure sites\n\n**HTTP/2 and HTTP/3:**\n• **HTTP/2** - Multiplexing, header compression\n• **HTTP/3** - Uses QUIC protocol, faster\n\n**Stateless Nature:**\n• Each request independent\n• No memory of previous requests\n• Cookies/sessions add state\n\n**HTTP Headers:**\n• **Request Headers** - Client info, preferences\n• **Response Headers** - Server info, instructions\n• **Entity Headers** - Body information"
+            ],
+
+            // ============================
+            // 🎉 FUN, MISC & INTERACTIVE
+            // ============================
+            "tell me a joke": [
+                "**CS Humor:**\n• Why do Java developers wear glasses? Because they don't C#!\n• There are 10 types of people in the world: those who understand binary, and those who don't.\n• Why was the computer cold? It left its Windows open!\n• What's a programmer's favorite hangout place? Foo Bar.\n• Why do programmers prefer dark mode? Because light attracts bugs!\n\n**LMC Jokes:**\n• Why did the Little Man get promoted? He always followed the program!\n• What's an LMC programmer's favorite dance? The HLT shuffle!\n• Why was the accumulator always tired? It carried too much weight!"
+            ],
+            "thank you": [
+                "You're very welcome! Remember: consistent practice is key to mastering computer science. Come back anytime you need help!",
+                "Happy to help! Keep that curiosity alive—every great programmer started exactly where you are now.",
+                "Anytime! Learning computer science is like programming: debug one problem at a time, and soon you'll have a working masterpiece!"
+            ],
+            "bye": [
+                "Goodbye! Don't forget to save your code and commit your changes!",
+                "See you later! Remember: The only bad code is code that doesn't compile... or maybe that's just my programming!",
+                "Happy coding! May your algorithms be efficient and your bugs be minimal!"
+            ],
+            "help": [
+                "**I can help with:**\n\n**📚 CORE CONCEPTS**\n• 'What is computer science?'\n• 'Explain binary/hexadecimal'\n• 'What is an algorithm?'\n• 'Describe logic gates'\n\n**🖥️ COMPUTER ARCHITECTURE**\n• 'What is CPU/RAM/ROM?'\n• 'Explain Von Neumann architecture'\n• 'What is motherboard?'\n• 'HDD vs SSD'\n\n**📟 LMC PROGRAMMING**\n• 'What is LMC?'\n• 'List LMC instructions'\n• 'Write LMC program for addition'\n• 'Explain fetch-decode-execute'\n• 'How does BRZ work?'\n\n**💻 PROGRAMMING BASICS**\n• 'What is a variable/function/loop?'\n• 'Explain arrays'\n• 'Difference between syntax/runtime/logical errors'\n• 'What is debugging?'\n\n**🔢 NUMBER SYSTEMS**\n• 'Convert 25 to binary'\n• 'Convert 101011 to decimal'\n• 'Convert AB3F to binary'\n• 'Explain ASCII vs Unicode'\n\n**🌐 WEB TECHNOLOGIES**\n• 'What is HTML/CSS/JavaScript?'\n• 'Explain client-server model'\n• 'What is IP address/DNS/HTTP?'\n\n**🎯 PRACTICE PROBLEMS**\n• 'Give me a binary conversion problem'\n• 'Create an LMC programming challenge'\n• 'Quiz me on logic gates'\n\n**📖 EXAM PREPARATION**\n• 'Important ICS definitions'\n• 'Common exam questions'\n• 'Study tips for ICS'\n\n**Type your question naturally, and I'll provide detailed explanations with examples!**"
+            ],
+
+            // Math flag for calculations
+            "calculate": "MATH_CHECK",
+            "solve": "MATH_CHECK",
+            "convert": "MATH_CHECK",
+
+            // Additional topics
+            "study tips": [
+                "**Effective ICS Study Strategies:**\n\n**1. Active Learning**\n• **Don't just read** - Write code, draw diagrams\n• **Teach someone** - Explain concepts to others\n• **Practice problems** - Do all exercises\n\n**2. Spaced Repetition**\n• Review daily, not cram\n• Use flashcards for definitions\n• Revisit topics weekly\n\n**3. Practical Application**\n• **LMC** - Write and trace programs\n• **Binary** - Do conversions manually\n• **Logic gates** - Draw truth tables\n\n**4. Resource Organization**\n• Keep organized notes\n• Create concept maps\n• Save example programs\n\n**5. Exam Preparation**\n• **Know the fundamentals** - Binary, LMC, gates\n• **Practice tracing** - Step through LMC code\n• **Time management** - Practice with time limits\n• **Review past papers** - Identify patterns\n\n**6. Debug Your Understanding**\n• Identify weak areas\n• Get help early\n• Test yourself regularly\n\n**7. Healthy Habits**\n• Take breaks (Pomodoro technique)\n• Sleep well before exams\n• Stay hydrated\n• Exercise regularly\n\n**Remember:** Computer science builds on itself. Master each concept before moving on!"
+            ],
+
+            "exam preparation": [
+                "**ICS Exam Preparation Guide:**\n\n**📝 MUST-KNOW TOPICS:**\n\n**1. Number Systems (20-25%)**\n• Binary/Decimal/Hex conversions\n• Addition/subtraction in binary\n• ASCII representation\n• Two's complement (if covered)\n\n**2. LMC Programming (25-30%)**\n• Instruction set (know all codes)\n• Writing simple programs\n• Tracing program execution\n• Mailbox contents after execution\n• Branching logic\n\n**3. Logic Gates & Boolean Algebra (15-20%)**\n• Truth tables for all gates\n• Simple circuit diagrams\n• Boolean expressions\n• De Morgan's laws\n\n**4. Computer Architecture (15-20%)**\n• CPU components and functions\n• RAM vs ROM\n• Fetch-decode-execute cycle\n• Von Neumann architecture\n\n**5. General Concepts (10-15%)**\n• Algorithm/flowchart/pseudocode\n• Data vs information\n• Hardware vs software\n• Basic internet concepts\n\n**🎯 EXAM STRATEGIES:**\n\n**Before Exam:**\n1. **Review syllabus** - Know what's covered\n2. **Practice past papers** - Under timed conditions\n3. **Make cheat sheets** (even if not allowed in exam)\n4. **Group study** - Discuss difficult concepts\n\n**During Exam:**\n1. **Read carefully** - Underline key words\n2. **Manage time** - Allocate minutes per mark\n3. **Easy first** - Build confidence\n4. **Show work** - Partial credit for LMC tracing\n5. **Check answers** - If time permits\n\n**LMC Exam Tips:**\n• **Box method** - Draw boxes for mailboxes\n• **Step tracing** - PC, Acc, IR for each step\n• **Test values** - Try sample inputs\n• **Check halting** - Ensure HLT instruction\n\n**Binary Conversion Tips:**\n• **Quick checks** - Even numbers end with 0\n• **Powers of 2** - Know 2⁰ to 2¹⁰\n• **Hex shortcuts** - Group in 4s\n\n**⏰ TIME MANAGEMENT:**\n• **Multiple choice** - 1 minute each\n• **Short answer** - 2-3 minutes each\n• **LMC programs** - 10-15 minutes\n• **Tracing** - 5-10 minutes\n\n**📚 LAST-MINUTE REVIEW:**\n• LMC instruction codes\n• Logic gate symbols\n• Binary/Hex conversion steps\n• Key definitions\n\n**Remember:** Stay calm, breathe, and trust your preparation!"
+            ],
+
+            "careers in cs": [
+                "**Computer Science Career Paths:**\n\n**💼 SOFTWARE DEVELOPMENT ROLES:**\n\n**1. Front-end Developer**\n• Creates user interfaces\n• Technologies: HTML, CSS, JavaScript\n• Frameworks: React, Angular, Vue\n\n**2. Back-end Developer**\n• Server-side programming\n• Databases, APIs, logic\n• Technologies: Node.js, Python, Java, SQL\n\n**3. Full-stack Developer**\n• Both front-end and back-end\n• End-to-end development\n• Versatile and in-demand\n\n**4. Mobile Developer**\n• iOS (Swift) or Android (Kotlin/Java)\n• Cross-platform (Flutter, React Native)\n• App store deployment\n\n**5. Game Developer**\n• Game engines (Unity, Unreal)\n• Graphics programming\n• Physics simulation\n\n**🔧 SPECIALIZED ROLES:**\n\n**1. DevOps Engineer**\n• Deployment, automation, monitoring\n• Cloud platforms (AWS, Azure, GCP)\n• CI/CD pipelines\n\n**2. Data Scientist**\n• Data analysis, machine learning\n• Statistics, Python, R\n• Business insights\n\n**3. Cybersecurity Analyst**\n• Protect systems from attacks\n• Ethical hacking, security protocols\n• Risk assessment\n\n**4. Cloud Architect**\n• Design cloud infrastructure\n• Scalability, reliability planning\n• Cost optimization\n\n**5. AI/ML Engineer**\n• Machine learning models\n• Neural networks, deep learning\n• Natural language processing\n\n**🎓 ACADEMIC & RESEARCH:**\n• University professor\n• Research scientist\n• PhD in specialized areas\n\n**💡 ENTREPRENEURSHIP:**\n• Tech startup founder\n• Product development\n• Innovation leadership\n\n**📈 CAREER PROGRESSION:**\n**Entry-level:** Junior Developer\n**Mid-level:** Developer → Senior Developer\n**Advanced:** Tech Lead → Engineering Manager\n**Leadership:** Director → VP → CTO\n\n**💰 SALARY RANGES (Varies by location):**\n• **Entry-level:** $60,000 - $90,000\n• **Mid-level:** $90,000 - $130,000\n• **Senior:** $130,000 - $200,000+\n• **Leadership:** $200,000 - $500,000+\n\n**🎯 SKILLS FOR SUCCESS:**\n• **Technical:** Programming, algorithms, systems\n• **Soft Skills:** Communication, teamwork, problem-solving\n• **Continuous Learning:** Stay updated with technology\n• **Portfolio:** Personal projects, GitHub contributions\n\n**🌍 INDUSTRY SECTORS:**\n• **Tech Companies** - Google, Microsoft, Apple\n• **Finance** - Banks, trading firms\n• **Healthcare** - Medical software, bioinformatics\n• **E-commerce** - Amazon, Shopify\n• **Entertainment** - Netflix, gaming companies\n• **Automotive** - Self-driving cars, infotainment\n• **Government** - Defense, public services\n\n**ICS FOUNDATION:**\nThe concepts you're learning now (binary, LMC, logic gates) are the building blocks for all these careers. Master these fundamentals!"
+            ]
+        };
+
+        // Enhanced math handler function
+        function handleMathQuery(query) {
+            query = query.toLowerCase();
+
+            // Binary conversions
+            if (query.includes("binary") || query.includes("convert")) {
+                if (query.includes("to binary") && query.match(/\d+/)) {
+                    let num = parseInt(query.match(/\d+/)[0]);
+                    return `**Decimal ${num} to Binary:**\n\n**Method 1: Division by 2**\n${num} ÷ 2 = ${Math.floor(num / 2)} R${num % 2}\n${Math.floor(num / 2)} ÷ 2 = ${Math.floor(num / 4)} R${Math.floor(num / 2) % 2}\n...\n**Result:** ${num.toString(2)}\n\n**Method 2: Powers of 2**\n${num} = ${getPowerOf2Breakdown(num)}\n**Binary:** ${num.toString(2).padStart(8, '0')}\n\n**Verification:**\n${num.toString(2)}₂ = ${parseInt(num.toString(2), 2)}₁₀`;
+                }
+
+                if (query.includes("to decimal") && query.match(/[01]+/)) {
+                    let binary = query.match(/[01]+/)[0];
+                    let decimal = parseInt(binary, 2);
+                    return `**Binary ${binary} to Decimal:**\n\n**Calculation:**\n${binary.split('').reverse().map((bit, index) => `${bit} × 2^${index} = ${bit * Math.pow(2, index)}`).join('\\n')}\n**Sum:** ${decimal}\n\n**Quick Method:** ${binary}₂ = ${decimal}₁₀`;
+                }
+            }
+
+            // Hex conversions
+            if (query.includes("hex") || query.includes("hexadecimal")) {
+                if (query.includes("to hex") && query.match(/\d+/)) {
+                    let num = parseInt(query.match(/\d+/)[0]);
+                    return `**Decimal ${num} to Hexadecimal:**\n\n**Method: Division by 16**\n${num} ÷ 16 = ${Math.floor(num / 16)} R${num % 16}\n${Math.floor(num / 16)} > 0 ? Continue...\n**Result:** ${num.toString(16).toUpperCase()}\n\n**Via Binary:**\n${num}₁₀ = ${num.toString(2)}₂\nGroup in 4s: ${groupBinaryIn4s(num.toString(2))}\nConvert each: ${binaryToHexGroups(num.toString(2))}\n**Hex:** ${num.toString(16).toUpperCase()}₁₆`;
+                }
+            }
+
+            return "I can help with number conversions! Try: 'Convert 25 to binary' or 'Convert 1101 to decimal'";
+        }
+
+        // Helper functions for math responses
+        function getPowerOf2Breakdown(num) {
+            let powers = [];
+            let remaining = num;
+            for (let i = 10; i >= 0; i--) {
+                let power = Math.pow(2, i);
+                if (remaining >= power) {
+                    powers.push(`2^${i} (${power})`);
+                    remaining -= power;
+                }
+            }
+            return powers.join(' + ');
+        }
+
+        function groupBinaryIn4s(binaryStr) {
+            // Pad to multiple of 4
+            let padded = binaryStr.padStart(Math.ceil(binaryStr.length / 4) * 4, '0');
+            let groups = [];
+            for (let i = 0; i < padded.length; i += 4) {
+                groups.push(padded.substring(i, i + 4));
+            }
+            return groups.join(' ');
+        }
+
+        function binaryToHexGroups(binaryStr) {
+            let groups = groupBinaryIn4s(binaryStr).split(' ');
+            return groups.map(group => {
+                let decimal = parseInt(group, 2);
+                return decimal < 10 ? decimal : String.fromCharCode(55 + decimal);
+            }).join(' ');
+        }
+
+        // Export for use in your main application (Node.js environment only)
+        // Check if 'module' is defined before trying to export
+        if (typeof module !== 'undefined' && module.exports) {
+            module.exports = {
+                responses,
+                handleMathQuery
+            };
+        }
+
+
+        function sendMessage() {
+            const inputField = document.getElementById("userInput");
+            const sendBtn = document.getElementById("sendBtn");
+            const text = inputField.value.trim();
+
+            if (text === "") return;
+
+            sendBtn.disabled = true;
+            addMessage(text, "user-message");
+            inputField.value = "";
+
+            // Show typing indicator
+            const typingIndicator = document.getElementById("typingIndicator");
+            typingIndicator.style.display = "block";
+
+            // Simulate thinking time (more realistic)
+            setTimeout(() => {
+                typingIndicator.style.display = "none";
+                const reply = generateResponse(text.toLowerCase());
+                addMessage(reply, "bot-message");
+                sendBtn.disabled = false;
+            }, 800 + Math.random() * 700); // Random delay between 800-1500ms
+        }
+
+        function generateResponse(text) {
+            // Check for math operations
+            if (text.includes("what is") || text.includes("calculate")) {
+                const mathResult = tryMathOperation(text);
+                if (mathResult) return mathResult;
+            }
+
+            // Check for keyword matches
+            for (let key in responses) {
+                if (text.includes(key)) {
+                    const possibleResponses = responses[key];
+                    if (Array.isArray(possibleResponses)) {
+                        // Return random response from array
+                        return possibleResponses[Math.floor(Math.random() * possibleResponses.length)];
+                    } else if (possibleResponses !== "MATH_CHECK") {
+                        return possibleResponses;
+                    }
+                }
+            }
+
+            // Default responses
+            const defaults = [
+                "That's interesting! Tell me more.",
+                "I'm not sure about that, but I'm learning every day!",
+                "Could you rephrase that? I want to make sure I understand.",
+                "Hmm, I don't have information on that yet. Try asking something else!",
+                "That's a great question! Unfortunately, I don't have that answer right now."
+            ];
+
+            return defaults[Math.floor(Math.random() * defaults.length)];
+        }
+
+        function tryMathOperation(text) {
+            // Simple math parser
+            const match = text.match(/(\d+)\s*([\+\-\*\/])\s*(\d+)/);
+            if (match) {
+                const num1 = parseFloat(match[1]);
+                const operator = match[2];
+                const num2 = parseFloat(match[3]);
+                let result;
+
+                switch (operator) {
+                    case '+': result = num1 + num2; break;
+                    case '-': result = num1 - num2; break;
+                    case '*': result = num1 * num2; break;
+                    case '/': result = num2 !== 0 ? num1 / num2 : "Cannot divide by zero"; break;
+                }
+
+                return `The answer is ${result}`;
+            }
+            return null;
+        }
+
+        function addMessage(text, className) {
+            const chatBox = document.getElementById("chatBox");
+            const div = document.createElement("div");
+            div.classList.add("message", className);
+
+            // Render Markdown if it's a bot message, otherwise plain text for user to avoid XSS from user input if not needed
+            // But for consistency let's render both or just bot. 
+            // User messages are usually simple text. Let's render both for now to support code blocks in user input too if they want.
+            // Update: To be safe and simple, let's just parse everything.
+            // Actually, let's verify if 'marked' is loaded.
+            if (typeof marked !== 'undefined') {
+                div.innerHTML = marked.parse(text);
+            } else {
+                div.innerText = text;
+            }
+
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function handleEnter(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        }
+
+        // Welcome message with slight delay
+        setTimeout(() => {
+            addMessage("Try asking me about time, date, or even simple math like 'what is 25 + 17'!", "bot-message");
+        }, 1000);
+    </script>
+
+</body>
+
+</html>
